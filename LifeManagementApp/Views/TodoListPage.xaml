@@ -53,6 +53,13 @@
                             <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
                                                   CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Edit"
+                                                Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                                CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
                         <Grid ColumnDefinitions="*,Auto"
                               RowDefinitions="Auto,Auto"
                               RowSpacing="4">
