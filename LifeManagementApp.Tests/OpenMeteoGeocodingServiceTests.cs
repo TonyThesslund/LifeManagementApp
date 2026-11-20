@@ -111,4 +111,10 @@ public class OpenMeteoGeocodingServiceTests
 
 		Assert.Equal(LocationSearchException.BadResponseMessage, error.Message);
 	}
+
+	[Fact]
+	public void Timeout_IsTenSeconds()
+	{
+		Assert.Equal(TimeSpan.FromSeconds(10), OpenMeteoGeocodingService.Timeout);
+	}
 }

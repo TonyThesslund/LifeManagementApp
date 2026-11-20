@@ -351,4 +351,19 @@ public class HomeViewModelTests
 
 		Assert.Null(viewModel.WeatherTime);
 	}
+
+	[Fact]
+	public async Task Refresh_WhileWeatherIsLoading_IsIgnored()
+	{
+		_weather.Gate = new TaskCompletionSource();
+		var viewModel = CreateViewModel();
+		var first = viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		var second = viewModel.LoadWeatherCommand.ExecuteAsync(null);
+		_weather.Gate.SetResult();
+		await Task.WhenAll(first, second);
+
+		Assert.Equal(1, _weather.CallCount);
+		Assert.True(viewModel.HasWeather);
+	}
 }
