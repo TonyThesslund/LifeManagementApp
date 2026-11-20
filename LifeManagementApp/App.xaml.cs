@@ -17,12 +17,23 @@ public partial class App : Application
 
 	public const string AppName = "Life Management";
 
+	// The page column is at most 808 wide (see PageColumn in Styles.xaml), plus some room on both sides.
+	// On a screen that is too low for the height, the window is made to fit (see CenterOnScreen).
+	private const double WindowWidth = 880;
+	private const double WindowHeight = 1000;
+
+	// Room left free above and below the window on a low screen, e.g. for the taskbar
+	private const double ScreenMargin = 80;
+
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
 		var window = new Window(new AppShell())
 		{
-			Title = AppName
+			Title = AppName,
+			Width = WindowWidth,
+			Height = WindowHeight
 		};
+		CenterOnScreen(window);
 
 #if WINDOWS
 		window.TitleBar = CreateTitleBar();
@@ -58,4 +69,21 @@ public partial class App : Application
 
 	private Color GetColor(string key) => (Color)Resources[key];
 #endif
+
+	/// <summary>Places the window in the middle of the main screen, made lower if the screen is too low for it.</summary>
+	private static void CenterOnScreen(Window window)
+	{
+		var display = DeviceDisplay.Current.MainDisplayInfo;
+		if (display.Density <= 0)
+		{
+			return;
+		}
+
+		// The screen size is in pixels, the window size in scaled units
+		var screenWidth = display.Width / display.Density;
+		var screenHeight = display.Height / display.Density;
+		window.Height = Math.Min(window.Height, screenHeight - ScreenMargin);
+		window.X = Math.Max(0, (screenWidth - window.Width) / 2);
+		window.Y = Math.Max(0, (screenHeight - window.Height) / 2);
+	}
 }
