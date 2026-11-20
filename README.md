@@ -1,5 +1,7 @@
 # LifeManagementApp
 
+[![Build](https://github.com/TonyThesslund/LifeManagementApp/actions/workflows/build.yml/badge.svg)](https://github.com/TonyThesslund/LifeManagementApp/actions/workflows/build.yml)
+
 A .NET MAUI app that combines a to-do list with the current weather and tells you when it's kitesurfing weather.
 
 ## Goals
