@@ -42,6 +42,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<TodoListViewModel>();
 		builder.Services.AddSingleton<TodoListPage>();
 
+		builder.Services.AddSingleton<SettingsViewModel>();
+		builder.Services.AddSingleton<SettingsPage>();
+
 		builder.Services.AddTransient<TodoDetailViewModel>();
 		builder.Services.AddTransient<TodoDetailPage>();
 

@@ -1,0 +1,188 @@
+using LifeManagementApp.Models;
+using LifeManagementApp.Services;
+using LifeManagementApp.Tests.Fakes;
+using LifeManagementApp.ViewModels;
+
+namespace LifeManagementApp.Tests;
+
+public class SettingsViewModelTests
+{
+	private static readonly WeatherLocation Helsinki = new("Helsinki", 60.17, 24.94, "Uusimaa, Finland");
+	private static readonly WeatherLocation Oulu = new("Oulu", 65.01, 25.47, "North Ostrobothnia, Finland");
+
+	private readonly FakeSettingsService _settings = new();
+	private readonly FakeGeocodingService _geocoding = new();
+
+	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding);
+
+	[Fact]
+	public void Opens_WithSavedSettings()
+	{
+		_settings.Location = Helsinki;
+		_settings.WindLimit = 7.5;
+
+		var viewModel = CreateViewModel();
+
+		Assert.Equal(Helsinki, viewModel.CurrentLocation);
+		Assert.True(SettingsViewModel.TryParseWindLimit(viewModel.WindLimitText, out var shown));
+		Assert.Equal(7.5, shown);
+		Assert.False(viewModel.HasWindLimitError);
+	}
+
+	[Fact]
+	public async Task Search_ShowsResults()
+	{
+		_geocoding.Results = [Helsinki, Oulu];
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Hel";
+
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		Assert.Equal("Hel", _geocoding.LastName);
+		Assert.Equal([Helsinki, Oulu], viewModel.SearchResults);
+		Assert.False(viewModel.HasSearchMessage);
+	}
+
+	[Fact]
+	public async Task Search_NoResults_ShowsMessage()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = " Xyzzy ";
+
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		Assert.Empty(viewModel.SearchResults);
+		Assert.Equal("No places found for \"Xyzzy\".", viewModel.SearchMessage);
+	}
+
+	[Fact]
+	public async Task Search_Error_ShowsErrorMessage()
+	{
+		_geocoding.Error = new LocationSearchException(LocationSearchException.NoInternetMessage);
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Helsinki";
+
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		Assert.Equal(LocationSearchException.NoInternetMessage, viewModel.SearchMessage);
+		Assert.False(viewModel.IsSearching);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("   ")]
+	public void Search_EmptyText_CannotExecute(string text)
+	{
+		var viewModel = CreateViewModel();
+
+		viewModel.SearchText = text;
+
+		Assert.False(viewModel.SearchCommand.CanExecute(null));
+	}
+
+	[Fact]
+	public async Task Search_ShowsLoading_UntilDone()
+	{
+		_geocoding.Gate = new TaskCompletionSource();
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Helsinki";
+
+		var search = viewModel.SearchCommand.ExecuteAsync(null);
+		Assert.True(viewModel.IsSearching);
+
+		_geocoding.Gate.SetResult();
+		await search;
+		Assert.False(viewModel.IsSearching);
+	}
+
+	[Fact]
+	public async Task NewSearch_ClearsOldResultsAndMessage()
+	{
+		_geocoding.Results = [Helsinki];
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Helsinki";
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		_geocoding.Results = [];
+		viewModel.SearchText = "Xyzzy";
+		await viewModel.SearchCommand.ExecuteAsync(null);
+		_geocoding.Results = [Oulu];
+		viewModel.SearchText = "Oulu";
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		Assert.Equal([Oulu], viewModel.SearchResults);
+		Assert.False(viewModel.HasSearchMessage);
+	}
+
+	[Fact]
+	public async Task SelectLocation_SavesIt_AndClearsSearch()
+	{
+		_geocoding.Results = [Helsinki, Oulu];
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Hel";
+		await viewModel.SearchCommand.ExecuteAsync(null);
+
+		viewModel.SelectLocationCommand.Execute(Oulu);
+
+		Assert.Equal(Oulu, _settings.Location);
+		Assert.Equal(Oulu, viewModel.CurrentLocation);
+		Assert.Empty(viewModel.SearchResults);
+		Assert.Equal(string.Empty, viewModel.SearchText);
+	}
+
+	[Theory]
+	[InlineData("7", 7.0)]
+	[InlineData("7.5", 7.5)]
+	[InlineData("7,5", 7.5)]
+	[InlineData(" 12 ", 12.0)]
+	[InlineData("40", 40.0)]
+	public void WindLimit_ValidText_IsSaved(string text, double expected)
+	{
+		var viewModel = CreateViewModel();
+
+		viewModel.WindLimitText = text;
+
+		Assert.Equal(expected, _settings.WindLimit);
+		Assert.False(viewModel.HasWindLimitError);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("abc")]
+	[InlineData("0")]
+	[InlineData("-3")]
+	[InlineData("40.5")]
+	[InlineData("5.5.5")]
+	public void WindLimit_InvalidText_IsRejected(string text)
+	{
+		var viewModel = CreateViewModel();
+
+		viewModel.WindLimitText = text;
+
+		Assert.Equal(5.0, _settings.WindLimit);
+		Assert.True(viewModel.HasWindLimitError);
+	}
+
+	[Fact]
+	public void WindLimit_FixingInvalidText_ClearsError()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.WindLimitText = "abc";
+
+		viewModel.WindLimitText = "6";
+
+		Assert.False(viewModel.HasWindLimitError);
+		Assert.Equal(6.0, _settings.WindLimit);
+	}
+
+	[Fact]
+	public void Load_ReadsSettingsChangedElsewhere()
+	{
+		var viewModel = CreateViewModel();
+		_settings.Location = Oulu;
+
+		viewModel.Load();
+
+		Assert.Equal(Oulu, viewModel.CurrentLocation);
+	}
+}

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
+             x:Class="LifeManagementApp.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Settings">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16"
+                             Spacing="24"
+                             MaximumWidthRequest="700"
+                             HorizontalOptions="Start">
+
+            <!-- Weather location -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Weather location"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+                <Label>
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Current: "
+                                  TextColor="{StaticResource Gray500}" />
+                            <Span Text="{Binding CurrentLocation.Name}"
+                                  FontAttributes="Bold" />
+                            <Span Text="{Binding CurrentLocation.Details, StringFormat=' ({0})', TargetNullValue=''}"
+                                  TextColor="{StaticResource Gray500}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
+                    <Entry Text="{Binding SearchText}"
+                           Placeholder="Search for a city"
+                           ReturnCommand="{Binding SearchCommand}" />
+                    <Button Grid.Column="1"
+                            Text="Search"
+                            Command="{Binding SearchCommand}" />
+                </Grid>
+
+                <ActivityIndicator IsRunning="{Binding IsSearching}"
+                                   IsVisible="{Binding IsSearching}"
+                                   HorizontalOptions="Start" />
+
+                <Label Text="{Binding SearchMessage}"
+                       IsVisible="{Binding HasSearchMessage}"
+                       TextColor="{StaticResource Gray500}" />
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SearchResults}"
+                                     Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:WeatherLocation">
+                            <Border Padding="12"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectLocationCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Name}"
+                                           FontAttributes="Bold" />
+                                    <Label Text="{Binding Details}"
+                                           TextColor="{StaticResource Gray500}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Kitesurf wind limit -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Kitesurf wind limit"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+                <Label Text="Home shows the kitesurf notice when the wind is above this."
+                       TextColor="{StaticResource Gray500}" />
+                <HorizontalStackLayout Spacing="8">
+                    <Entry Text="{Binding WindLimitText}"
+                           Keyboard="Numeric"
+                           WidthRequest="100" />
+                    <Label Text="m/s"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Label Text="{Binding WindLimitError}"
+                       IsVisible="{Binding HasWindLimitError}"
+                       TextColor="Red" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
