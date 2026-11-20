@@ -140,6 +140,32 @@ public sealed class TodoRepositoryTests : IDisposable
 	}
 
 	[Fact]
+	public async Task GetAllAsync_ByPriority_PutsFinishedLast_KeepingOrderWithinEachGroup()
+	{
+		await AddAsync("Done high", 5, 0, isDone: true);
+		await AddAsync("Open low", 1, 0);
+		await AddAsync("Done low", 2, 0, isDone: true);
+		await AddAsync("Open high", 4, 0);
+
+		var all = await _repository.GetAllAsync(TodoSortOrder.Priority);
+
+		Assert.Equal(["Open high", "Open low", "Done high", "Done low"], Titles(all));
+	}
+
+	[Fact]
+	public async Task GetAllAsync_ByDueDate_PutsFinishedLast_KeepingOrderWithinEachGroup()
+	{
+		await AddAsync("Done early", 3, 0, isDone: true);
+		await AddAsync("Open late", 3, 5);
+		await AddAsync("Done late", 3, 4, isDone: true);
+		await AddAsync("Open early", 3, 1);
+
+		var all = await _repository.GetAllAsync(TodoSortOrder.DueDate);
+
+		Assert.Equal(["Open early", "Open late", "Done early", "Done late"], Titles(all));
+	}
+
+	[Fact]
 	public async Task GetAllAsync_IncludesFinishedTodos_AndLoadsCategory()
 	{
 		await AddAsync("Done", 1, 0, isDone: true, categoryId: WorkId);
