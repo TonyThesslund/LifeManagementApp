@@ -101,4 +101,93 @@ public class TodoListViewModelTests
 		Assert.Contains("Call mum", confirmation.Message);
 		Assert.Equal("Delete", confirmation.Accept);
 	}
+
+	[Fact]
+	public async Task Load_GivesAllCategoriesFirst_ThenDatabaseCategories()
+	{
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(["All categories", "Personal", "Work", "Shopping"], viewModel.Filters.Select(c => c.Name));
+		Assert.Same(TodoListViewModel.AllCategories, viewModel.SelectedFilter);
+	}
+
+	[Fact]
+	public async Task Load_Twice_LoadsCategoriesOnce()
+	{
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(1, _repository.CategoriesCallCount);
+		Assert.Equal(4, viewModel.Filters.Count);
+	}
+
+	[Fact]
+	public async Task Load_WithAllCategories_PassesNoCategory()
+	{
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Null(_repository.LastCategoryId);
+	}
+
+	[Fact]
+	public async Task ChoosingCategory_ReloadsWithItsId_AndShowsOnlyThose()
+	{
+		_repository.Seed(new TodoItem { Title = "Finish report", CategoryId = 2 });
+		_repository.Seed(new TodoItem { Title = "Buy milk", CategoryId = 3 });
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Work");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		Assert.Equal(2, _repository.LastCategoryId);
+		Assert.Equal(["Finish report"], viewModel.Todos.Select(t => t.Title));
+	}
+
+	[Fact]
+	public async Task ChoosingAllCategoriesAgain_PassesNoCategory()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Work");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		viewModel.SelectedFilter = TodoListViewModel.AllCategories;
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		Assert.Null(_repository.LastCategoryId);
+	}
+
+	[Fact]
+	public async Task Filtering_KeepsSortOrder()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		viewModel.SortOrder = TodoSortOrder.DueDate;
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Shopping");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		Assert.Equal(TodoSortOrder.DueDate, _repository.LastSortOrder);
+		Assert.Equal(3, _repository.LastCategoryId);
+	}
+
+	[Fact]
+	public async Task EmptyMessage_NamesChosenCategory()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		Assert.Equal("No to-dos yet.", viewModel.EmptyMessage);
+
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Work");
+
+		Assert.Equal("No to-dos in Work.", viewModel.EmptyMessage);
+	}
 }
