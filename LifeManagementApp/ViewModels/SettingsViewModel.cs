@@ -14,14 +14,32 @@ public partial class SettingsViewModel : ObservableObject
 	private readonly ISettingsService _settings;
 	private readonly IGeocodingService _geocoding;
 	private readonly IThemeService _themeService;
+	private readonly ITodoRepository _repository;
 
-	public SettingsViewModel(ISettingsService settings, IGeocodingService geocoding, IThemeService themeService)
+	public SettingsViewModel(
+		ISettingsService settings,
+		IGeocodingService geocoding,
+		IThemeService themeService,
+		ITodoRepository repository)
 	{
 		_settings = settings;
 		_geocoding = geocoding;
 		_themeService = themeService;
+		_repository = repository;
 		Load();
 	}
+
+	public ObservableCollection<Category> Categories { get; } = [];
+
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
+	public partial string NewCategoryName { get; set; } = string.Empty;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasCategoryError))]
+	public partial string? CategoryError { get; set; }
+
+	public bool HasCategoryError => CategoryError is not null;
 
 	public IReadOnlyList<ThemeSetting> Themes { get; } = Enum.GetValues<ThemeSetting>();
 
@@ -142,5 +160,52 @@ public partial class SettingsViewModel : ObservableObject
 		SearchResults.Clear();
 		SearchText = string.Empty;
 		SearchMessage = null;
+	}
+
+	[RelayCommand]
+	private async Task LoadCategoriesAsync()
+	{
+		var categories = await _repository.GetCategoriesAsync();
+
+		Categories.Clear();
+		foreach (var category in categories)
+		{
+			Categories.Add(category);
+		}
+	}
+
+	partial void OnNewCategoryNameChanged(string value)
+	{
+		// The message is about the name that was tried, so it goes away when the user changes it
+		CategoryError = null;
+	}
+
+	private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewCategoryName);
+
+	[RelayCommand(CanExecute = nameof(CanAddCategory))]
+	private async Task AddCategoryAsync()
+	{
+		var name = NewCategoryName.Trim();
+		if (name.Length == 0)
+		{
+			CategoryError = "Enter a name for the category.";
+			return;
+		}
+
+		if (name.Length > Category.MaxNameLength)
+		{
+			CategoryError = $"A category name can be at most {Category.MaxNameLength} characters.";
+			return;
+		}
+
+		if (await _repository.CategoryExistsAsync(name))
+		{
+			CategoryError = $"A category called \"{name}\" already exists.";
+			return;
+		}
+
+		await _repository.AddCategoryAsync(name);
+		NewCategoryName = string.Empty;
+		await LoadCategoriesAsync();
 	}
 }

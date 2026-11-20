@@ -91,6 +91,43 @@
                        TextColor="Red" />
             </VerticalStackLayout>
 
+            <!-- Categories -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Categories"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+                <Label Text="Used to group to-dos and filter the to-do list."
+                       TextColor="{StaticResource Gray500}" />
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}"
+                                     Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Category">
+                            <Border Padding="12,8"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                <Label Text="{Binding Name}"
+                                       VerticalOptions="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
+                    <Entry Text="{Binding NewCategoryName}"
+                           Placeholder="New category"
+                           MaxLength="200"
+                           ReturnCommand="{Binding AddCategoryCommand}" />
+                    <Button Grid.Column="1"
+                            Text="Add"
+                            Command="{Binding AddCategoryCommand}" />
+                </Grid>
+                <Label Text="{Binding CategoryError}"
+                       IsVisible="{Binding HasCategoryError}"
+                       TextColor="Red" />
+            </VerticalStackLayout>
+
             <!-- Theme -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Theme"
