@@ -26,6 +26,7 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
 		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
+		builder.Services.AddSingleton<IDialogService, ShellDialogService>();
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();

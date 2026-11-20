@@ -4,7 +4,7 @@
              xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
              x:Class="LifeManagementApp.Views.TodoDetailPage"
              x:DataType="vm:TodoDetailViewModel"
-             Title="New to-do">
+             Title="{Binding PageTitle}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16"

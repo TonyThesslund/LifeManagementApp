@@ -40,6 +40,15 @@ public partial class TodoListViewModel : ObservableObject
 	}
 
 	[RelayCommand]
+	private Task EditTodoAsync(TodoItem item)
+	{
+		return _navigation.GoToAsync(nameof(TodoDetailPage), new Dictionary<string, object>
+		{
+			[TodoDetailViewModel.IdParameter] = item.Id
+		});
+	}
+
+	[RelayCommand]
 	private async Task LoadTodosAsync()
 	{
 		if (IsBusy)

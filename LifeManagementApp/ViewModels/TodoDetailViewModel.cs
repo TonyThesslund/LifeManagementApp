@@ -5,18 +5,27 @@ using LifeManagementApp.Services;
 
 namespace LifeManagementApp.ViewModels;
 
-public partial class TodoDetailViewModel : ObservableObject
+public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 {
+	public const string IdParameter = "id";
+
 	private readonly ITodoRepository _repository;
 	private readonly INavigationService _navigation;
+	private readonly IDialogService _dialogs;
 
-	public TodoDetailViewModel(ITodoRepository repository, INavigationService navigation)
+	private TodoItem? _existing;
+
+	public TodoDetailViewModel(ITodoRepository repository, INavigationService navigation, IDialogService dialogs)
 	{
 		_repository = repository;
 		_navigation = navigation;
+		_dialogs = dialogs;
 	}
 
 	public IReadOnlyList<int> Priorities { get; } = [1, 2, 3, 4, 5];
+
+	[ObservableProperty]
+	public partial string PageTitle { get; set; } = "New to-do";
 
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -50,6 +59,33 @@ public partial class TodoDetailViewModel : ObservableObject
 		HasTitleError = TitleError is not null;
 	}
 
+	public void ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		if (query.TryGetValue(IdParameter, out var value) && value is int id)
+		{
+			LoadCommand.Execute(id);
+		}
+	}
+
+	[RelayCommand]
+	private async Task LoadAsync(int id)
+	{
+		var item = await _repository.GetByIdAsync(id);
+		if (item is null)
+		{
+			await _dialogs.ShowAlertAsync("Not found", "This to-do no longer exists.");
+			await _navigation.GoBackAsync();
+			return;
+		}
+
+		_existing = item;
+		PageTitle = "Edit to-do";
+		Title = item.Title;
+		Notes = item.Notes;
+		Priority = item.Priority;
+		DueDate = item.DueDate;
+	}
+
 	[RelayCommand(CanExecute = nameof(CanSave))]
 	private async Task SaveAsync()
 	{
@@ -58,15 +94,25 @@ public partial class TodoDetailViewModel : ObservableObject
 			return;
 		}
 
-		var item = new TodoItem
+		if (_existing is null)
 		{
-			Title = Title.Trim(),
-			Notes = Notes,
-			Priority = Priority,
-			DueDate = DueDate
-		};
+			await _repository.AddAsync(new TodoItem
+			{
+				Title = Title.Trim(),
+				Notes = Notes,
+				Priority = Priority,
+				DueDate = DueDate
+			});
+		}
+		else
+		{
+			_existing.Title = Title.Trim();
+			_existing.Notes = Notes;
+			_existing.Priority = Priority;
+			_existing.DueDate = DueDate;
+			await _repository.UpdateAsync(_existing);
+		}
 
-		await _repository.AddAsync(item);
 		await _navigation.GoBackAsync();
 	}
 }
