@@ -53,7 +53,7 @@ LifeManagementApp/
 
 ## Work order
 
-Each step is a GitHub issue, done in a feature branch (`feature/<issue#>-short-name`) and merged to `main` with a pull request that closes the issue.
+Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>-short-name`) and merged to `main` with a pull request that closes the issues. From step 7 on, each step also adds xUnit tests for the logic it introduces.
 
 | # | Step | Contents |
 |---|------|----------|
@@ -63,12 +63,13 @@ Each step is a GitHub issue, done in a feature branch (`feature/<issue#>-short-n
 | 4 | Dependency injection | Services, pages and ViewModels registered in `MauiProgram` |
 | 5 | To-do list page | `CollectionView`, sort by priority / due date |
 | 6 | Add / edit page | `TodoDetailPage` with title validation, edit via id parameter |
-| 7 | Weather service | Open-Meteo client, JSON → `WeatherInfo`, m/s unit, error handling, loading state |
-| 8 | Home page | Top 3 to-dos, weather, kitesurf alert |
-| 9 | Bindings + converters | `x:DataType` everywhere, at least one converter |
-| 10 | Bonus features | Mark done / edit / delete with `SwipeView`, categories and filtering |
-| 11 | Tests | xUnit tests for top 3 ordering and the kitesurf wind limit |
-| 12 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 7 | Test project | xUnit project, app gets a plain `net9.0` target, tests for the repository and `TodoDetailViewModel` |
+| 8 | Weather service | Open-Meteo client, JSON → `WeatherInfo`, m/s unit, error handling, loading state, tests for JSON mapping and wind limit |
+| 9 | Home page | Top 3 to-dos, weather, kitesurf alert |
+| 10 | Bindings + converters | `x:DataType` everywhere, at least one converter |
+| 11 | Bonus features | Mark done / edit / delete with `SwipeView`, categories and filtering |
+| 12 | Remaining tests | Fill any gaps in test coverage |
+| 13 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 
