@@ -12,7 +12,7 @@ public class HomeViewModelTests
 	private readonly FakeNavigationService _navigation = new();
 	private readonly FakeWeatherService _weather = new();
 
-	private HomeViewModel CreateViewModel() => new(_repository, _navigation, _weather);
+	private HomeViewModel CreateViewModel() => new(_repository, _navigation, _weather, new KitesurfAdvisor());
 
 	[Fact]
 	public async Task LoadTodos_AsksRepositoryForTopThree()
@@ -182,5 +182,52 @@ public class HomeViewModelTests
 		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
 
 		Assert.Equal(2, _weather.CallCount);
+	}
+
+	[Theory]
+	[InlineData(5.1)]
+	[InlineData(9.0)]
+	public async Task LoadWeather_WindOverLimit_ShowsKitesurfAlert(double windSpeed)
+	{
+		_weather.Result = new WeatherInfo { WindSpeed = windSpeed };
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.True(viewModel.IsKitesurfWeather);
+	}
+
+	[Theory]
+	[InlineData(0.0)]
+	[InlineData(4.9)]
+	[InlineData(5.0)]
+	public async Task LoadWeather_WindAtOrBelowLimit_HidesKitesurfAlert(double windSpeed)
+	{
+		_weather.Result = new WeatherInfo { WindSpeed = windSpeed };
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.False(viewModel.IsKitesurfWeather);
+	}
+
+	[Fact]
+	public async Task LoadWeather_FailureAfterKitesurfWeather_HidesKitesurfAlert()
+	{
+		_weather.Result = new WeatherInfo { WindSpeed = 8.0 };
+		var viewModel = CreateViewModel();
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+		Assert.True(viewModel.IsKitesurfWeather);
+
+		_weather.Error = new WeatherUnavailableException(WeatherUnavailableException.UnreachableMessage);
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.False(viewModel.IsKitesurfWeather);
+	}
+
+	[Fact]
+	public void NewViewModel_HasNoKitesurfAlert()
+	{
+		Assert.False(CreateViewModel().IsKitesurfWeather);
 	}
 }

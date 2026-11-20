@@ -13,6 +13,18 @@
 
             <Border Padding="16"
                     StrokeShape="RoundRectangle 8"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    IsVisible="{Binding IsKitesurfWeather}">
+                <Label Text="🪁 Kitesurf weather!"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
+            </Border>
+
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 8"
                     Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
                 <VerticalStackLayout Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">

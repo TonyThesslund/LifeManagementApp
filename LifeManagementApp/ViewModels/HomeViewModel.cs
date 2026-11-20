@@ -14,12 +14,18 @@ public partial class HomeViewModel : ObservableObject
 	private readonly ITodoRepository _repository;
 	private readonly INavigationService _navigation;
 	private readonly IWeatherService _weatherService;
+	private readonly IKitesurfAdvisor _kitesurfAdvisor;
 
-	public HomeViewModel(ITodoRepository repository, INavigationService navigation, IWeatherService weatherService)
+	public HomeViewModel(
+		ITodoRepository repository,
+		INavigationService navigation,
+		IWeatherService weatherService,
+		IKitesurfAdvisor kitesurfAdvisor)
 	{
 		_repository = repository;
 		_navigation = navigation;
 		_weatherService = weatherService;
+		_kitesurfAdvisor = kitesurfAdvisor;
 	}
 
 	public ObservableCollection<TodoItem> TopTodos { get; } = [];
@@ -32,6 +38,9 @@ public partial class HomeViewModel : ObservableObject
 	public partial WeatherInfo? Weather { get; set; }
 
 	[ObservableProperty]
+	public partial bool IsKitesurfWeather { get; set; }
+
+	[ObservableProperty]
 	public partial bool IsLoadingWeather { get; set; }
 
 	[ObservableProperty]
@@ -41,6 +50,11 @@ public partial class HomeViewModel : ObservableObject
 	public bool HasWeather => Weather is not null;
 
 	public bool HasWeatherError => WeatherError is not null;
+
+	partial void OnWeatherChanged(WeatherInfo? value)
+	{
+		IsKitesurfWeather = value is not null && _kitesurfAdvisor.IsKitesurfWeather(value);
+	}
 
 	/// <summary>
 	/// Called when the page appears. To-dos are always reloaded; the weather only if it hasn't been loaded yet.
