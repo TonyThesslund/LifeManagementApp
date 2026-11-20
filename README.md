@@ -72,8 +72,9 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 13 | Settings page *(bonus)* | Settings tab: weather location (city search), kitesurf wind limit and light / dark theme, saved with `Preferences` |
 | 14 | Remaining tests | Fill any gaps in test coverage |
 | 15 | Manage categories *(bonus)* | Add and delete categories in Settings, pickers stay up to date |
-| 16 | Styling and design | Color theme, shared styles, centered layout, page designs, app icon |
-| 17 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 16 | Mac support | Build and run on macOS, Windows and Mac builds on GitHub Actions |
+| 17 | Styling and design | Color theme, shared styles, centered layout, page designs, app icon |
+| 18 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 
