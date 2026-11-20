@@ -8,11 +8,11 @@ namespace LifeManagementApp.Converters;
 /// </summary>
 public class PriorityToColorConverter : IValueConverter
 {
-	public static readonly Color Highest = Color.FromArgb("#EF5350");  // 5: red
-	public static readonly Color High = Color.FromArgb("#FFA726");     // 4: orange
-	public static readonly Color Medium = Color.FromArgb("#FFEE58");   // 3: yellow
-	public static readonly Color Low = Color.FromArgb("#66BB6A");      // 2: green
-	public static readonly Color Lowest = Color.FromArgb("#BDBDBD");   // 1: gray
+	public static readonly Color Highest = Color.FromArgb("#E5484D");  // 5: red
+	public static readonly Color High = Color.FromArgb("#F76B15");     // 4: orange
+	public static readonly Color Medium = Color.FromArgb("#E2A400");   // 3: yellow
+	public static readonly Color Low = Color.FromArgb("#30A46C");      // 2: green
+	public static readonly Color Lowest = Color.FromArgb("#8B8D98");   // 1: gray
 
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{

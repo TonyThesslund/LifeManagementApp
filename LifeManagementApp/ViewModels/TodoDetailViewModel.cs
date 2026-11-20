@@ -148,4 +148,11 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 
 		await _navigation.GoBackAsync();
 	}
+
+	/// <summary>Leaves the page without saving.</summary>
+	[RelayCommand]
+	private Task CancelAsync()
+	{
+		return _navigation.GoBackAsync();
+	}
 }

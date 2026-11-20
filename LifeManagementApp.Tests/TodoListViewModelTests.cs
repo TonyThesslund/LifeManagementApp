@@ -398,4 +398,84 @@ public class TodoListViewModelTests
 		Assert.Equal("Shopping", viewModel.SelectedFilter.Name);
 		Assert.Equal(3, _repository.LastCategoryId);
 	}
+
+	[Fact]
+	public async Task Load_SplitsTodosIntoOpenAndDone_KeepingOrder()
+	{
+		_repository.Seed(new TodoItem { Title = "Write report", Priority = 5 });
+		_repository.Seed(new TodoItem { Title = "Old task", Priority = 4, IsDone = true });
+		_repository.Seed(new TodoItem { Title = "Buy milk", Priority = 2 });
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(["Write report", "Buy milk"], viewModel.OpenTodos.Select(t => t.Title));
+		Assert.Equal(["Old task"], viewModel.DoneTodos.Select(t => t.Title));
+		Assert.True(viewModel.HasOpenTodos);
+		Assert.True(viewModel.HasDoneTodos);
+		Assert.False(viewModel.IsEmpty);
+	}
+
+	[Fact]
+	public async Task Load_WithNothingDone_HidesDoneSection()
+	{
+		_repository.Seed(new TodoItem { Title = "Write report" });
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.False(viewModel.HasDoneTodos);
+		Assert.Empty(viewModel.DoneTodos);
+	}
+
+	[Fact]
+	public async Task Load_WithNoTodos_ShowsEmptyState()
+	{
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.True(viewModel.IsEmpty);
+		Assert.False(viewModel.HasOpenTodos);
+		Assert.False(viewModel.HasDoneTodos);
+	}
+
+	[Fact]
+	public async Task ToggleDone_MovesTodoToDoneSection()
+	{
+		var item = _repository.Seed(new TodoItem { Title = "Write report" });
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		await viewModel.ToggleDoneCommand.ExecuteAsync(viewModel.OpenTodos.Single());
+
+		Assert.Empty(viewModel.OpenTodos);
+		Assert.Equal(item.Id, Assert.Single(viewModel.DoneTodos).Id);
+	}
+
+	[Fact]
+	public async Task Load_Twice_DoesNotDuplicateSections()
+	{
+		_repository.Seed(new TodoItem { Title = "Write report" });
+		_repository.Seed(new TodoItem { Title = "Old task", IsDone = true });
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Single(viewModel.OpenTodos);
+		Assert.Single(viewModel.DoneTodos);
+	}
+
+	[Fact]
+	public async Task EmptyHint_DependsOnChosenCategory()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		Assert.Equal("Add your first to-do with the Add to-do button.", viewModel.EmptyHint);
+
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Work");
+
+		Assert.Equal("Pick another category, or add a to-do to this one.", viewModel.EmptyHint);
+	}
 }

@@ -13,10 +13,13 @@ public class HomeViewModelTests
 	private readonly FakeWeatherService _weather = new();
 	private readonly FakeSettingsService _settings = new();
 
+	// Friday 20 November 2026, 14:30
+	private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 11, 20, 14, 30, 0, TimeSpan.Zero));
+
 	private static readonly WeatherLocation Oulu = new("Oulu", 65.01, 25.47, "North Ostrobothnia, Finland");
 
 	private HomeViewModel CreateViewModel() =>
-		new(_repository, _navigation, _weather, new KitesurfAdvisor(_settings), _settings);
+		new(_repository, _navigation, _weather, new KitesurfAdvisor(_settings), _settings, _time);
 
 	[Fact]
 	public async Task LoadTodos_AsksRepositoryForTopThree()
@@ -365,5 +368,88 @@ public class HomeViewModelTests
 
 		Assert.Equal(1, _weather.CallCount);
 		Assert.True(viewModel.HasWeather);
+	}
+
+	[Theory]
+	[InlineData(0, "Good night")]
+	[InlineData(4, "Good night")]
+	[InlineData(5, "Good morning")]
+	[InlineData(11, "Good morning")]
+	[InlineData(12, "Good afternoon")]
+	[InlineData(17, "Good afternoon")]
+	[InlineData(18, "Good evening")]
+	[InlineData(22, "Good evening")]
+	[InlineData(23, "Good night")]
+	public void GreetingFor_DependsOnHour(int hour, string expected)
+	{
+		Assert.Equal(expected, HomeViewModel.GreetingFor(hour));
+	}
+
+	[Fact]
+	public void NewViewModel_ShowsGreetingAndDateForNow()
+	{
+		var viewModel = CreateViewModel();
+
+		Assert.Equal("Good afternoon", viewModel.Greeting);
+		Assert.Equal("Friday 20 November", viewModel.Today);
+	}
+
+	[Fact]
+	public void Today_IsInEnglish_WhateverTheComputersLanguage()
+	{
+		var original = System.Globalization.CultureInfo.CurrentCulture;
+		System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("fi-FI");
+		try
+		{
+			Assert.Equal("Friday 20 November", CreateViewModel().Today);
+		}
+		finally
+		{
+			System.Globalization.CultureInfo.CurrentCulture = original;
+		}
+	}
+
+	[Fact]
+	public async Task LoadAsync_UpdatesGreetingAndDate_WhenTimeHasPassed()
+	{
+		var viewModel = CreateViewModel();
+		_time.Now = new DateTimeOffset(2026, 11, 21, 8, 0, 0, TimeSpan.Zero);
+
+		await viewModel.LoadAsync();
+
+		Assert.Equal("Good morning", viewModel.Greeting);
+		Assert.Equal("Saturday 21 November", viewModel.Today);
+	}
+
+	[Fact]
+	public void NewViewModel_ShowsLocationDetails()
+	{
+		_settings.Location = Oulu;
+
+		var viewModel = CreateViewModel();
+
+		Assert.Equal("North Ostrobothnia, Finland", viewModel.LocationDetails);
+	}
+
+	[Fact]
+	public async Task LoadWeather_AfterLocationChange_ShowsNewDetails()
+	{
+		var viewModel = CreateViewModel();
+		_settings.Location = Oulu;
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.Equal("Oulu", viewModel.LocationName);
+		Assert.Equal("North Ostrobothnia, Finland", viewModel.LocationDetails);
+	}
+
+	[Fact]
+	public async Task GoToTodos_OpensToDoTab()
+	{
+		var viewModel = CreateViewModel();
+
+		await viewModel.GoToTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(["//todos"], _navigation.Routes);
 	}
 }

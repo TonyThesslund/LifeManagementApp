@@ -8,47 +8,80 @@
              Title="{Binding PageTitle}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16"
-                             Spacing="16">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Title" />
-                <Entry Text="{Binding Title}"
-                       Placeholder="What needs to be done?"
-                       MaxLength="200" />
-                <Label Text="{Binding TitleError}"
-                       IsVisible="{Binding HasTitleError}"
-                       TextColor="Red" />
-            </VerticalStackLayout>
+        <VerticalStackLayout Style="{StaticResource PageColumn}">
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Notes" />
-                <Editor Text="{Binding Notes}"
-                        Placeholder="Optional"
-                        MaxLength="1000"
-                        AutoSize="TextChanges"
-                        MinimumHeightRequest="80" />
-            </VerticalStackLayout>
+            <Label Text="{Binding PageTitle}"
+                   Style="{StaticResource PageHeading}" />
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Priority (5 = highest)" />
-                <Picker ItemsSource="{Binding Priorities}"
-                        SelectedItem="{Binding Priority}" />
-            </VerticalStackLayout>
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="18">
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Category" />
-                <Picker ItemsSource="{Binding Categories}"
-                        SelectedItem="{Binding SelectedCategory}"
-                        ItemDisplayBinding="{Binding Name, x:DataType=models:Category}" />
-            </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Title"
+                               Style="{StaticResource FieldLabel}" />
+                        <Entry Text="{Binding Title}"
+                               Placeholder="What needs to be done?"
+                               FontSize="16"
+                               MaxLength="200" />
+                        <Label Text="{Binding TitleError}"
+                               IsVisible="{Binding HasTitleError}"
+                               Style="{StaticResource ErrorText}" />
+                    </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Due date" />
-                <DatePicker Date="{Binding DueDate}" />
-            </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Notes"
+                               Style="{StaticResource FieldLabel}" />
+                        <Editor Text="{Binding Notes}"
+                                Placeholder="Optional"
+                                MaxLength="1000"
+                                AutoSize="TextChanges"
+                                MinimumHeightRequest="100" />
+                    </VerticalStackLayout>
 
-            <Button Text="Save"
-                    Command="{Binding SaveCommand}" />
+                    <!-- Priority, category and due date side by side; they wrap in a narrow window -->
+                    <FlexLayout Wrap="Wrap"
+                                JustifyContent="Start">
+                        <VerticalStackLayout Spacing="4"
+                                             Margin="0,0,24,12"
+                                             WidthRequest="160">
+                            <Label Text="Priority (5 = highest)"
+                                   Style="{StaticResource FieldLabel}" />
+                            <Picker ItemsSource="{Binding Priorities}"
+                                    SelectedItem="{Binding Priority}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4"
+                                             Margin="0,0,24,12"
+                                             WidthRequest="200">
+                            <Label Text="Category"
+                                   Style="{StaticResource FieldLabel}" />
+                            <Picker ItemsSource="{Binding Categories}"
+                                    SelectedItem="{Binding SelectedCategory}"
+                                    ItemDisplayBinding="{Binding Name, x:DataType=models:Category}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4"
+                                             Margin="0,0,0,12"
+                                             WidthRequest="180">
+                            <Label Text="Due date"
+                                   Style="{StaticResource FieldLabel}" />
+                            <DatePicker Date="{Binding DueDate}" />
+                        </VerticalStackLayout>
+                    </FlexLayout>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <HorizontalStackLayout Spacing="10"
+                                   HorizontalOptions="End">
+                <Button Text="Cancel"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding CancelCommand}" />
+                <Button Text="Save"
+                        MinimumWidthRequest="100"
+                        Command="{Binding SaveCommand}" />
+            </HorizontalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 

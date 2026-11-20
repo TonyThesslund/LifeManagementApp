@@ -8,25 +8,22 @@
              Title="Settings">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16"
-                             Spacing="24"
-                             MaximumWidthRequest="700"
-                             HorizontalOptions="Start">
+        <VerticalStackLayout Style="{StaticResource PageColumn}">
 
             <!-- Weather location -->
-            <VerticalStackLayout Spacing="8">
+            <Border Style="{StaticResource SectionCard}">
+            <VerticalStackLayout Spacing="10">
                 <Label Text="Weather location"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label>
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Current: "
-                                  TextColor="{StaticResource Gray500}" />
+                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                             <Span Text="{Binding CurrentLocation.Name}"
                                   FontAttributes="Bold" />
                             <Span Text="{Binding CurrentLocation.Details, StringFormat=' ({0})', TargetNullValue=''}"
-                                  TextColor="{StaticResource Gray500}" />
+                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -47,38 +44,42 @@
 
                 <Label Text="{Binding SearchMessage}"
                        IsVisible="{Binding HasSearchMessage}"
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
 
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SearchResults}"
-                                     Spacing="8">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="models:WeatherLocation">
-                            <Border Padding="12"
-                                    StrokeShape="RoundRectangle 8"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding SelectLocationCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
-                                                          CommandParameter="{Binding .}" />
-                                </Border.GestureRecognizers>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Name}"
-                                           FontAttributes="Bold" />
-                                    <Label Text="{Binding Details}"
-                                           TextColor="{StaticResource Gray500}" />
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
+                <!-- Search results: one row per place, tap to pick it -->
+                <Border Style="{StaticResource Card}"
+                        Padding="0"
+                        IsVisible="{Binding HasSearchResults}">
+                    <VerticalStackLayout Style="{StaticResource ListRows}"
+                                         BindableLayout.ItemsSource="{Binding SearchResults}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:WeatherLocation">
+                                <Grid Style="{StaticResource ListRow}">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectLocationCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
+                                                              CommandParameter="{Binding .}" />
+                                    </Grid.GestureRecognizers>
+                                    <VerticalStackLayout VerticalOptions="Center">
+                                        <Label Text="{Binding Name}"
+                                               FontFamily="OpenSansSemibold" />
+                                        <Label Text="{Binding Details}"
+                                               Style="{StaticResource Caption}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
+            </Border>
 
             <!-- Kitesurf wind limit -->
-            <VerticalStackLayout Spacing="8">
+            <Border Style="{StaticResource SectionCard}">
+            <VerticalStackLayout Spacing="10">
                 <Label Text="Kitesurf wind limit"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label Text="Home shows the kitesurf notice when the wind is above this."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
                 <HorizontalStackLayout Spacing="8">
                     <Entry Text="{Binding WindLimitText}"
                            Keyboard="Numeric"
@@ -88,38 +89,48 @@
                 </HorizontalStackLayout>
                 <Label Text="{Binding WindLimitError}"
                        IsVisible="{Binding HasWindLimitError}"
-                       TextColor="Red" />
+                       Style="{StaticResource ErrorText}" />
             </VerticalStackLayout>
+            </Border>
 
             <!-- Categories -->
-            <VerticalStackLayout Spacing="8">
+            <Border Style="{StaticResource SectionCard}">
+            <VerticalStackLayout Spacing="10">
                 <Label Text="Categories"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label Text="Used to group to-dos and filter the to-do list."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
 
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}"
-                                     Spacing="8">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="models:Category">
-                            <Border Padding="12,4"
-                                    StrokeShape="RoundRectangle 8"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                                <Grid ColumnDefinitions="*,Auto">
+                <!-- One row per category with a bin button, like the to-do list -->
+                <Border Style="{StaticResource Card}"
+                        Padding="0">
+                    <VerticalStackLayout Style="{StaticResource ListRows}"
+                                         BindableLayout.ItemsSource="{Binding Categories}">
+                        <BindableLayout.EmptyView>
+                            <Label Text="No categories yet."
+                                   Style="{StaticResource Caption}"
+                                   Padding="16"
+                                   BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+                        </BindableLayout.EmptyView>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:Category">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Style="{StaticResource ListRow}"
+                                      Padding="16,4,8,4">
                                     <Label Text="{Binding Name}"
                                            VerticalOptions="Center" />
-                                    <Button Grid.Column="1"
-                                            Text="Delete"
-                                            BackgroundColor="Transparent"
-                                            TextColor="{StaticResource DeleteRed}"
-                                            Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
-                                            CommandParameter="{Binding .}" />
+                                    <ImageButton Grid.Column="1"
+                                                 Source="{AppThemeBinding Light=bin_light.png, Dark=bin_dark.png}"
+                                                 Style="{StaticResource IconButton}"
+                                                 SemanticProperties.Description="Delete"
+                                                 ToolTipProperties.Text="Delete"
+                                                 Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
+                                                 CommandParameter="{Binding .}" />
                                 </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
 
                 <Grid ColumnDefinitions="*,Auto"
                       ColumnSpacing="8">
@@ -129,25 +140,28 @@
                            ReturnCommand="{Binding AddCategoryCommand}" />
                     <Button Grid.Column="1"
                             Text="Add"
+                            Style="{StaticResource SecondaryButton}"
                             Command="{Binding AddCategoryCommand}" />
                 </Grid>
                 <Label Text="{Binding CategoryError}"
                        IsVisible="{Binding HasCategoryError}"
-                       TextColor="Red" />
+                       Style="{StaticResource ErrorText}" />
             </VerticalStackLayout>
+            </Border>
 
             <!-- Theme -->
-            <VerticalStackLayout Spacing="8">
+            <Border Style="{StaticResource SectionCard}">
+            <VerticalStackLayout Spacing="10">
                 <Label Text="Theme"
-                       FontSize="20"
-                       FontAttributes="Bold" />
-                <Label Text="System follows the Windows setting."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource SectionHeading}" />
+                <Label Text="System follows your computer's light or dark setting."
+                       Style="{StaticResource Caption}" />
                 <Picker ItemsSource="{Binding Themes}"
                         SelectedItem="{Binding SelectedTheme}"
                         HorizontalOptions="Start"
                         WidthRequest="160" />
             </VerticalStackLayout>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>

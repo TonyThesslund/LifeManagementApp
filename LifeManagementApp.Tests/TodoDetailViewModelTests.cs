@@ -244,4 +244,16 @@ public class TodoDetailViewModelTests
 
 		Assert.Equal(expectedId, Assert.Single(_repository.Updated).CategoryId);
 	}
+
+	[Fact]
+	public async Task Cancel_GoesBackWithoutSaving()
+	{
+		_viewModel.Title = "Buy milk";
+
+		await _viewModel.CancelCommand.ExecuteAsync(null);
+
+		Assert.Empty(_repository.Added);
+		Assert.Empty(_repository.Updated);
+		Assert.Equal(1, _navigation.BackCount);
+	}
 }

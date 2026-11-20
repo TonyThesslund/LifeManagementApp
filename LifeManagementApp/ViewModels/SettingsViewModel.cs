@@ -29,6 +29,7 @@ public partial class SettingsViewModel : ObservableObject
 		_themeService = themeService;
 		_repository = repository;
 		_dialogs = dialogs;
+		SearchResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSearchResults));
 		Load();
 	}
 
@@ -50,6 +51,9 @@ public partial class SettingsViewModel : ObservableObject
 	public partial ThemeSetting SelectedTheme { get; set; }
 
 	public ObservableCollection<WeatherLocation> SearchResults { get; } = [];
+
+	/// <summary>True while there are search results to pick from; shows the results card.</summary>
+	public bool HasSearchResults => SearchResults.Count > 0;
 
 	[ObservableProperty]
 	public partial WeatherLocation CurrentLocation { get; set; } = WeatherLocation.Vaasa;
