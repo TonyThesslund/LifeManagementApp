@@ -51,6 +51,42 @@ LifeManagementApp/
 └── README.md
 ```
 
+## Running the app
+
+The Windows app can only be built on Windows and the Mac app only on a Mac. The unit tests run on both.
+
+### Windows
+
+1. Install Visual Studio 2022 or newer with the **.NET Multi-platform App UI development** workload
+2. Open `LifeManagementApp.sln` and run the `LifeManagementApp` project, or from a terminal:
+   ```
+   dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-windows10.0.19041.0
+   ```
+
+### Mac
+
+1. Install **Xcode** from the App Store, open it once to accept the license and install its components, then run:
+   ```
+   sudo xcode-select -s /Applications/Xcode.app
+   ```
+2. Install the **.NET 10 SDK** from https://dotnet.microsoft.com/download (Arm64 for Apple Silicon Macs)
+3. Install the MAUI workload:
+   ```
+   sudo dotnet workload install maui
+   ```
+4. In the repository folder, build and start the app:
+   ```
+   dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-maccatalyst
+   ```
+
+If the build says the Xcode version doesn't match, install the version it names (older versions are at https://developer.apple.com/download/all).
+
+### Tests
+
+```
+dotnet test LifeManagementApp.Tests
+```
+
 ## Work order
 
 Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>-short-name`) and merged to `main` with a pull request that closes the issues. From step 7 on, each step also adds xUnit tests for the logic it introduces.
