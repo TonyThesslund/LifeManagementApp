@@ -27,16 +27,24 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
 		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
 		builder.Services.AddSingleton<IDialogService, ShellDialogService>();
+		builder.Services.AddSingleton(Preferences.Default);
+		builder.Services.AddSingleton<ISettingsService, PreferencesSettingsService>();
+		builder.Services.AddSingleton<IThemeService, ThemeService>();
 		builder.Services.AddSingleton<IKitesurfAdvisor, KitesurfAdvisor>();
 		builder.Services.AddSingleton(Connectivity.Current);
 		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>(client =>
 			client.Timeout = OpenMeteoWeatherService.Timeout);
+		builder.Services.AddHttpClient<IGeocodingService, OpenMeteoGeocodingService>(client =>
+			client.Timeout = OpenMeteoGeocodingService.Timeout);
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();
 
 		builder.Services.AddSingleton<TodoListViewModel>();
 		builder.Services.AddSingleton<TodoListPage>();
+
+		builder.Services.AddSingleton<SettingsViewModel>();
+		builder.Services.AddSingleton<SettingsPage>();
 
 		builder.Services.AddTransient<TodoDetailViewModel>();
 		builder.Services.AddTransient<TodoDetailPage>();

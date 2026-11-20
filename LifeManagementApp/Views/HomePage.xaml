@@ -16,11 +16,16 @@
                     StrokeThickness="0"
                     BackgroundColor="{StaticResource Primary}"
                     IsVisible="{Binding IsKitesurfWeather}">
-                <Label Text="🪁 Kitesurf weather!"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" />
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="🪁 Kitesurf weather!"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding KitesurfReason}"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
             </Border>
 
             <Border Padding="16"
@@ -56,6 +61,10 @@
                                    FontSize="28" />
                         </VerticalStackLayout>
                     </Grid>
+
+                    <Label Text="{Binding WeatherTime, StringFormat='Measured at {0} local time'}"
+                           IsVisible="{Binding HasWeather}"
+                           TextColor="{StaticResource Gray500}" />
 
                     <Label Text="{Binding WeatherError}"
                            IsVisible="{Binding HasWeatherError}"

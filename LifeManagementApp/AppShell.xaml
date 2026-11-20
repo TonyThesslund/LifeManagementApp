@@ -16,6 +16,11 @@
             Title="To-dos"
             ContentTemplate="{DataTemplate views:TodoListPage}"
             Route="todos" />
+
+        <ShellContent
+            Title="Settings"
+            ContentTemplate="{DataTemplate views:SettingsPage}"
+            Route="settings" />
     </TabBar>
 
 </Shell>
