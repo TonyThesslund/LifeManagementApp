@@ -206,4 +206,97 @@ public sealed class TodoRepositoryTests : IDisposable
 
 		Assert.Equal(["Personal", "Shopping", "Work"], categories.Select(c => c.Name).ToArray());
 	}
+
+	[Fact]
+	public async Task AddCategoryAsync_SavesTrimmedName_AndAssignsId()
+	{
+		var added = await _repository.AddCategoryAsync("  Hobbies ");
+
+		Assert.True(added.Id > ShoppingId);
+		Assert.Equal("Hobbies", added.Name);
+		Assert.Contains("Hobbies", (await _repository.GetCategoriesAsync()).Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task AddCategoryAsync_NewCategory_CanBeUsedByTodos()
+	{
+		var hobbies = await _repository.AddCategoryAsync("Hobbies");
+		await AddAsync("Paint", 3, 0, categoryId: hobbies.Id);
+
+		var filtered = await _repository.GetAllAsync(TodoSortOrder.Priority, hobbies.Id);
+
+		Assert.Equal("Hobbies", Assert.Single(filtered).Category!.Name);
+	}
+
+	[Theory]
+	[InlineData("Work")]
+	[InlineData("work")]
+	[InlineData(" WORK ")]
+	public async Task AddCategoryAsync_ExistingName_IsRejected_IgnoringCase(string name)
+	{
+		await Assert.ThrowsAsync<InvalidOperationException>(() => _repository.AddCategoryAsync(name));
+
+		Assert.Equal(3, (await _repository.GetCategoriesAsync()).Count);
+	}
+
+	[Fact]
+	public async Task AddCategoryAsync_NonEnglishLetters_ComparedIgnoringCase()
+	{
+		await _repository.AddCategoryAsync("Äiti");
+
+		Assert.True(await _repository.CategoryExistsAsync("äiti"));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => _repository.AddCategoryAsync("ÄITI"));
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("   ")]
+	public async Task AddCategoryAsync_EmptyName_IsRejected(string name)
+	{
+		await Assert.ThrowsAsync<ArgumentException>(() => _repository.AddCategoryAsync(name));
+	}
+
+	[Fact]
+	public async Task AddCategoryAsync_TooLongName_IsRejected()
+	{
+		await Assert.ThrowsAsync<ArgumentException>(() => _repository.AddCategoryAsync(new string('x', Category.MaxNameLength + 1)));
+	}
+
+	[Fact]
+	public async Task AddCategoryAsync_MaxLengthName_IsAccepted()
+	{
+		var added = await _repository.AddCategoryAsync(new string('x', Category.MaxNameLength));
+
+		Assert.Equal(Category.MaxNameLength, added.Name.Length);
+	}
+
+	[Theory]
+	[InlineData("Shopping", true)]
+	[InlineData("shopping", true)]
+	[InlineData("Shop", false)]
+	public async Task CategoryExistsAsync_ChecksNameIgnoringCase(string name, bool expected)
+	{
+		Assert.Equal(expected, await _repository.CategoryExistsAsync(name));
+	}
+
+	[Fact]
+	public async Task DeleteCategoryAsync_RemovesCategory_KeepsItsTodosWithoutCategory()
+	{
+		var todo = await AddAsync("Finish report", 5, 0, categoryId: WorkId);
+
+		await _repository.DeleteCategoryAsync(WorkId);
+
+		Assert.DoesNotContain("Work", (await _repository.GetCategoriesAsync()).Select(c => c.Name));
+		var kept = await _repository.GetByIdAsync(todo.Id);
+		Assert.NotNull(kept);
+		Assert.Null(kept.CategoryId);
+	}
+
+	[Fact]
+	public async Task DeleteCategoryAsync_UnknownId_DoesNothing()
+	{
+		await _repository.DeleteCategoryAsync(999);
+
+		Assert.Equal(3, (await _repository.GetCategoriesAsync()).Count);
+	}
 }

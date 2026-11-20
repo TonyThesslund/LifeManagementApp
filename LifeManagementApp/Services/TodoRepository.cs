@@ -87,4 +87,49 @@ public class TodoRepository(IDbContextFactory<AppDbContext> dbFactory) : ITodoRe
 			.OrderBy(c => c.Name)
 			.ToListAsync();
 	}
+
+	public async Task<bool> CategoryExistsAsync(string name)
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+		return await CategoryExistsAsync(db, name);
+	}
+
+	public async Task<Category> AddCategoryAsync(string name)
+	{
+		var trimmed = name?.Trim() ?? string.Empty;
+		if (trimmed.Length == 0 || trimmed.Length > Category.MaxNameLength)
+		{
+			throw new ArgumentException($"A category name must be 1-{Category.MaxNameLength} characters.", nameof(name));
+		}
+
+		await using var db = await dbFactory.CreateDbContextAsync();
+		if (await CategoryExistsAsync(db, trimmed))
+		{
+			throw new InvalidOperationException($"A category called \"{trimmed}\" already exists.");
+		}
+
+		var category = new Category { Name = trimmed };
+		db.Categories.Add(category);
+		await db.SaveChangesAsync();
+		return category;
+	}
+
+	public async Task DeleteCategoryAsync(int id)
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+
+		// The database's ON DELETE SET NULL rule keeps the category's to-dos, without a category
+		await db.Categories
+			.Where(c => c.Id == id)
+			.ExecuteDeleteAsync();
+	}
+
+	// Compared in C#, not SQL: SQLite's lower() only handles A-Z, so "Äiti" and "äiti" would count as different.
+	// There are only a few categories, so loading their names is cheap.
+	private static async Task<bool> CategoryExistsAsync(AppDbContext db, string name)
+	{
+		var trimmed = name.Trim();
+		var names = await db.Categories.Select(c => c.Name).ToListAsync();
+		return names.Any(n => string.Equals(n, trimmed, StringComparison.CurrentCultureIgnoreCase));
+	}
 }

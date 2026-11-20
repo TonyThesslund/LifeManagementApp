@@ -25,7 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		{
 			category.Property(c => c.Name)
 				.IsRequired()
-				.HasMaxLength(100);
+				.HasMaxLength(Category.MaxNameLength);
 
 			category.HasMany(c => c.Todos)
 				.WithOne(t => t.Category)
