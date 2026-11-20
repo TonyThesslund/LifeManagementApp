@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifeManagementApp", "LifeManagementApp\LifeManagementApp.csproj", "{7F0178EA-F76F-44E2-ABD1-5D97637DA1B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifeManagementApp.Tests", "LifeManagementApp.Tests\LifeManagementApp.Tests.csproj", "{BB664E13-2D90-4F4C-9519-87AFE024CB97}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{7F0178EA-F76F-44E2-ABD1-5D97637DA1B8}.Release|x64.Build.0 = Release|Any CPU
 		{7F0178EA-F76F-44E2-ABD1-5D97637DA1B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{7F0178EA-F76F-44E2-ABD1-5D97637DA1B8}.Release|x86.Build.0 = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|x64.Build.0 = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Debug|x86.Build.0 = Debug|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|x64.ActiveCfg = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|x64.Build.0 = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|x86.ActiveCfg = Release|Any CPU
+		{BB664E13-2D90-4F4C-9519-87AFE024CB97}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
