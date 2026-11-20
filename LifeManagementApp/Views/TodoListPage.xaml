@@ -1,12 +1,67 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
              x:Class="LifeManagementApp.Views.TodoListPage"
+             x:DataType="vm:TodoListViewModel"
              Title="To-dos">
 
-    <VerticalStackLayout Padding="30" Spacing="25">
-        <Label Text="To-dos"
-               Style="{StaticResource Headline}" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*">
+        <HorizontalStackLayout Margin="16,8,16,0"
+                               Spacing="8">
+            <Label Text="Sort by"
+                   VerticalOptions="Center" />
+            <Picker ItemsSource="{Binding SortOrders}"
+                    SelectedItem="{Binding SortOrder}"
+                    WidthRequest="160" />
+        </HorizontalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Todos}"
+                        Margin="16,8">
+            <CollectionView.EmptyView>
+                <Label Text="No to-dos yet."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="{StaticResource Gray500}" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:TodoItem">
+                    <Border Padding="12"
+                            StrokeShape="RoundRectangle 8"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="4">
+                            <Label Text="{Binding Title}"
+                                   FontSize="16"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Priority, StringFormat='Priority {0}'}" />
+                            <Label Grid.Row="1"
+                                   Text="{Binding Category.Name, TargetNullValue='No category', FallbackValue='No category'}"
+                                   TextColor="{StaticResource Gray500}" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="{Binding DueDate, StringFormat='{0:d}'}"
+                                   TextColor="{StaticResource Gray500}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+    </Grid>
 
 </ContentPage>
