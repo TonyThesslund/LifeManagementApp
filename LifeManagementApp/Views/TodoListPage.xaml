@@ -19,6 +19,7 @@
                    VerticalOptions="Center" />
             <Picker ItemsSource="{Binding SortOrders}"
                     SelectedItem="{Binding SortOrder}"
+                    ItemDisplayBinding="{Binding ., Converter={StaticResource SortOrderToText}, x:DataType=models:TodoSortOrder}"
                     WidthRequest="160" />
         </HorizontalStackLayout>
 
