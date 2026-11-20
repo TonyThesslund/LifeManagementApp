@@ -10,108 +10,208 @@
     <ScrollView>
         <VerticalStackLayout Style="{StaticResource PageColumn}">
 
-            <Border Padding="16"
-                    StrokeShape="RoundRectangle 8"
+            <!-- Greeting and date -->
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{Binding Greeting}"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="30" />
+                <Label Text="{Binding Today}"
+                       Style="{StaticResource Caption}"
+                       FontSize="15" />
+            </VerticalStackLayout>
+
+            <!-- Kitesurf notice -->
+            <Border Padding="20,16"
                     StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16"
                     BackgroundColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
                     IsVisible="{Binding IsKitesurfWeather}">
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="🪁 Kitesurf weather!"
-                           FontSize="24"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource OnAccent}"
-                           HorizontalOptions="Center" />
-                    <Label Text="{Binding KitesurfReason}"
-                           TextColor="{StaticResource OnAccent}"
-                           HorizontalOptions="Center" />
-                </VerticalStackLayout>
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="16">
+                    <Image Source="kite.png"
+                           WidthRequest="34"
+                           HeightRequest="34"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1"
+                                         Spacing="2"
+                                         VerticalOptions="Center">
+                        <Label Text="Kitesurf weather!"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="17"
+                               TextColor="{StaticResource OnAccent}" />
+                        <Label Text="{Binding KitesurfReason}"
+                               TextColor="{StaticResource OnAccent}" />
+                    </VerticalStackLayout>
+                </Grid>
             </Border>
 
-            <Border Padding="16"
-                    Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="8">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{Binding LocationName, StringFormat='Weather in {0}'}"
-                               Style="{StaticResource SectionHeading}"
-                               VerticalOptions="Center" />
+            <!-- Weather -->
+            <Border Padding="28,24"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 20"
+                    Background="{AppThemeBinding Light={StaticResource HeroBrushLight}, Dark={StaticResource HeroBrushDark}}">
+                <VerticalStackLayout Spacing="18">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <HorizontalStackLayout Spacing="6">
+                                <Image Source="pin.png"
+                                       WidthRequest="18"
+                                       HeightRequest="18"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding LocationName}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="18"
+                                       TextColor="{StaticResource HeroText}" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding LocationDetails}"
+                                   Margin="24,0,0,0"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource HeroMutedLight}, Dark={StaticResource HeroMutedDark}}" />
+                        </VerticalStackLayout>
                         <Button Grid.Column="1"
                                 Text="Refresh"
-                                Style="{StaticResource SecondaryButton}"
+                                Style="{StaticResource HeroButton}"
+                                VerticalOptions="Start"
                                 Command="{Binding LoadWeatherCommand}" />
                     </Grid>
 
                     <ActivityIndicator IsRunning="{Binding IsLoadingWeather}"
                                        IsVisible="{Binding IsLoadingWeather}"
+                                       Color="{StaticResource HeroText}"
                                        HorizontalOptions="Start" />
 
-                    <Grid ColumnDefinitions="*,*"
-                          IsVisible="{Binding HasWeather}">
-                        <VerticalStackLayout>
-                            <Label Text="Temperature"
-                                   Style="{StaticResource Caption}" />
-                            <Label Text="{Binding Weather.Temperature, StringFormat='{0:0.0} °C'}"
-                                   FontSize="28" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="1">
-                            <Label Text="Wind"
-                                   Style="{StaticResource Caption}" />
-                            <Label Text="{Binding Weather.WindSpeed, StringFormat='{0:0.0} m/s'}"
-                                   FontSize="28" />
-                        </VerticalStackLayout>
-                    </Grid>
+                    <FlexLayout Wrap="Wrap"
+                                AlignItems="End"
+                                IsVisible="{Binding HasWeather}">
+                        <!-- Temperature -->
+                        <HorizontalStackLayout Margin="0,0,40,0"
+                                               Spacing="4">
+                            <Image Source="thermometer.png"
+                                   WidthRequest="30"
+                                   HeightRequest="30"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding Weather.Temperature, StringFormat='{0:0.0}'}"
+                                   FontSize="72"
+                                   TextColor="{StaticResource HeroText}" />
+                            <Label Text="°C"
+                                   Margin="0,14,0,0"
+                                   FontSize="26"
+                                   TextColor="{StaticResource HeroText}" />
+                        </HorizontalStackLayout>
 
-                    <Label Text="{Binding WeatherTime, StringFormat='Measured at {0} local time'}"
-                           IsVisible="{Binding HasWeather}"
-                           Style="{StaticResource Caption}" />
+                        <!-- Wind and measurement time -->
+                        <VerticalStackLayout Margin="0,0,0,12"
+                                             Spacing="10">
+                            <HorizontalStackLayout Spacing="8">
+                                <Image Source="wind.png"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       VerticalOptions="Center" />
+                                <Label FontSize="15"
+                                       TextColor="{StaticResource HeroText}"
+                                       VerticalOptions="Center">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Weather.WindSpeed, StringFormat='{0:0.0} m/s'}"
+                                                  FontFamily="OpenSansSemibold" />
+                                            <Span Text=" wind" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="8">
+                                <Image Source="clock.png"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       Opacity="0.85"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding WeatherTime, StringFormat='Measured at {0} local time'}"
+                                       FontSize="14"
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource HeroMutedLight}, Dark={StaticResource HeroMutedDark}}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </FlexLayout>
 
                     <Label Text="{Binding WeatherError}"
                            IsVisible="{Binding HasWeatherError}"
-                           Style="{StaticResource ErrorText}" />
+                           FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource HeroText}" />
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="Top to-dos"
-                   Style="{StaticResource SectionHeading}" />
+            <!-- Top to-dos -->
+            <Grid ColumnDefinitions="*,Auto"
+                  Margin="0,8,0,-8">
+                <Label Text="Top to-dos"
+                       Style="{StaticResource SectionHeading}"
+                       VerticalOptions="Center" />
+                <Button Grid.Column="1"
+                        Text="See all"
+                        Style="{StaticResource SecondaryButton}"
+                        BorderWidth="0"
+                        Padding="8,4"
+                        Command="{Binding GoToTodosCommand}" />
+            </Grid>
 
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}"
-                                 Spacing="8">
-                <BindableLayout.EmptyView>
-                    <Label Text="Nothing to do. Enjoy your day!"
-                           Style="{StaticResource Caption}" />
-                </BindableLayout.EmptyView>
+            <!--
+                One card with a row per to-do. The rows sit 1 apart on a border-colored background,
+                so the gaps between them show as divider lines.
+            -->
+            <Border Style="{StaticResource Card}"
+                    Padding="0">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}"
+                                     Spacing="1"
+                                     BackgroundColor="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}">
+                    <BindableLayout.EmptyView>
+                        <Label Text="Nothing to do. Enjoy your day!"
+                               Style="{StaticResource Caption}"
+                               Padding="16"
+                               BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+                    </BindableLayout.EmptyView>
 
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="models:TodoItem">
-                        <Border Padding="12"
-                                Style="{StaticResource Card}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding OpenTodoCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
-                                                      CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="*,Auto"
-                                  RowDefinitions="Auto,Auto"
-                                  RowSpacing="4">
-                                <Label Text="{Binding Title}"
-                                       FontSize="16"
-                                       FontAttributes="Bold" />
-                                <Border Grid.Column="1"
-                                        Padding="8,2"
-                                        StrokeShape="RoundRectangle 10"
-                                        StrokeThickness="0"
-                                        VerticalOptions="Center"
-                                        BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColor}}">
-                                    <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
-                                           TextColor="{StaticResource OnPriority}" />
-                                </Border>
-                                <Label Grid.Row="1"
-                                       Grid.ColumnSpan="2"
-                                       Text="{Binding DueDate, StringFormat='Due {0:d}'}"
-                                       Style="{StaticResource Caption}" />
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:TodoItem">
+                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="14"
+                                  Padding="16,14"
+                                  BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenTodoCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
+                                                          CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                                <Ellipse WidthRequest="10"
+                                         HeightRequest="10"
+                                         VerticalOptions="Center"
+                                         Fill="{Binding Priority, Converter={StaticResource PriorityToColor}}" />
+                                <Label Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Title}"
+                                                  FontFamily="OpenSansSemibold"
+                                                  FontSize="15" />
+                                            <Span Text="{Binding Category.Name, StringFormat=' · {0}', TargetNullValue='', FallbackValue=''}"
+                                                  FontSize="13"
+                                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                            <Span Text="{Binding Priority, StringFormat=' · P{0}'}"
+                                                  FontSize="13"
+                                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label Grid.Column="2"
+                                       Text="{Binding DueDate, StringFormat='{0:d}'}"
+                                       Style="{StaticResource Caption}"
+                                       FontFamily="OpenSansSemibold"
+                                       VerticalOptions="Center" />
                             </Grid>
-                        </Border>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>

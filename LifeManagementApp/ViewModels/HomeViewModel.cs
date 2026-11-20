@@ -17,6 +17,7 @@ public partial class HomeViewModel : ObservableObject
 	private readonly IWeatherService _weatherService;
 	private readonly IKitesurfAdvisor _kitesurfAdvisor;
 	private readonly ISettingsService _settings;
+	private readonly TimeProvider _time;
 
 	// The location the shown weather is for, to notice when the user picks another one in Settings
 	private WeatherLocation? _loadedLocation;
@@ -26,14 +27,48 @@ public partial class HomeViewModel : ObservableObject
 		INavigationService navigation,
 		IWeatherService weatherService,
 		IKitesurfAdvisor kitesurfAdvisor,
-		ISettingsService settings)
+		ISettingsService settings,
+		TimeProvider time)
 	{
 		_repository = repository;
 		_navigation = navigation;
 		_weatherService = weatherService;
 		_kitesurfAdvisor = kitesurfAdvisor;
 		_settings = settings;
+		_time = time;
 		LocationName = settings.Location.Name;
+		LocationDetails = settings.Location.Details;
+		UpdateGreeting();
+	}
+
+	/// <summary>"Good morning", "Good afternoon", "Good evening" or "Good night", by the computer's local time.</summary>
+	[ObservableProperty]
+	public partial string Greeting { get; set; } = string.Empty;
+
+	/// <summary>Today's date, e.g. "Friday 20 November".</summary>
+	[ObservableProperty]
+	public partial string Today { get; set; } = string.Empty;
+
+	/// <summary>Region and country of the weather location, e.g. "Ostrobothnia, Finland". Empty if unknown.</summary>
+	[ObservableProperty]
+	public partial string? LocationDetails { get; set; }
+
+	/// <summary>The greeting for an hour of the day (0–23).</summary>
+	public static string GreetingFor(int hour) => hour switch
+	{
+		>= 5 and < 12 => "Good morning",
+		>= 12 and < 18 => "Good afternoon",
+		>= 18 and < 23 => "Good evening",
+		_ => "Good night"
+	};
+
+	private void UpdateGreeting()
+	{
+		var now = _time.GetLocalNow();
+		Greeting = GreetingFor(now.Hour);
+
+		// Invariant culture: the app's text is English, so the day and month names are too
+		Today = now.ToString("dddd d MMMM", CultureInfo.InvariantCulture);
 	}
 
 	public ObservableCollection<TodoItem> TopTodos { get; } = [];
@@ -90,6 +125,9 @@ public partial class HomeViewModel : ObservableObject
 	/// </summary>
 	public Task LoadAsync()
 	{
+		// The page stays open while the app runs, so the greeting and date are refreshed each time it's shown
+		UpdateGreeting();
+
 		var todos = LoadTodosCommand.ExecuteAsync(null);
 
 		var needsWeather = !HasWeather || _settings.Location != _loadedLocation;
@@ -134,6 +172,7 @@ public partial class HomeViewModel : ObservableObject
 			}
 
 			LocationName = location.Name;
+			LocationDetails = location.Details;
 			_loadedLocation = location;
 			Weather = await _weatherService.GetCurrentWeatherAsync(location.Latitude, location.Longitude);
 		}
@@ -146,6 +185,12 @@ public partial class HomeViewModel : ObservableObject
 		{
 			IsLoadingWeather = false;
 		}
+	}
+
+	[RelayCommand]
+	private Task GoToTodosAsync()
+	{
+		return _navigation.GoToAsync("//todos");
 	}
 
 	[RelayCommand]

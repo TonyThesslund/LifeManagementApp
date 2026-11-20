@@ -32,7 +32,7 @@ public sealed class RequirementTests : IDisposable
 	}
 
 	private HomeViewModel CreateHome(IWeatherService? weather = null) =>
-		new(_repository, _navigation, weather ?? _weather, new KitesurfAdvisor(_settings), _settings);
+		new(_repository, _navigation, weather ?? _weather, new KitesurfAdvisor(_settings), _settings, TimeProvider.System);
 
 	private TodoListViewModel CreateList() => new(_repository, _navigation, _dialogs);
 

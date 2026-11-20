@@ -32,6 +32,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IThemeService, ThemeService>();
 		builder.Services.AddSingleton<IKitesurfAdvisor, KitesurfAdvisor>();
 		builder.Services.AddSingleton(Connectivity.Current);
+		builder.Services.AddSingleton(TimeProvider.System);
 		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>(client =>
 			client.Timeout = OpenMeteoWeatherService.Timeout);
 		builder.Services.AddHttpClient<IGeocodingService, OpenMeteoGeocodingService>(client =>

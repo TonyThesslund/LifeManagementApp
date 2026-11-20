@@ -133,6 +133,16 @@
         <Setter Property="Padding" Value="10,8" />
     </Style>
 
+    <!-- Button on the weather card: white outline on the gradient -->
+    <Style TargetType="Button" x:Key="HeroButton" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="TextColor" Value="{StaticResource HeroText}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource HeroMutedLight}, Dark={StaticResource HeroMutedDark}}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="14,6" />
+    </Style>
+
     <!-- Inputs -->
 
     <Style TargetType="CheckBox">
