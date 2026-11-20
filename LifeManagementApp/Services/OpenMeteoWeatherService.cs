@@ -1,21 +1,52 @@
 using System.Globalization;
 using System.Net.Http.Json;
+using System.Text.Json;
 using LifeManagementApp.Models;
 
 namespace LifeManagementApp.Services;
 
-public class OpenMeteoWeatherService(HttpClient httpClient) : IWeatherService
+public class OpenMeteoWeatherService(HttpClient httpClient, IConnectivity connectivity) : IWeatherService
 {
 	private const string BaseUrl = "https://api.open-meteo.com/v1/forecast";
 
+	public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+
 	public async Task<WeatherInfo> GetCurrentWeatherAsync(double latitude, double longitude)
 	{
-		var url = BuildUrl(latitude, longitude);
+		if (connectivity.NetworkAccess != NetworkAccess.Internet)
+		{
+			throw new WeatherUnavailableException(WeatherUnavailableException.NoInternetMessage);
+		}
 
-		var response = await httpClient.GetFromJsonAsync<OpenMeteoResponse>(url);
+		OpenMeteoResponse? response;
+		try
+		{
+			using var httpResponse = await httpClient.GetAsync(BuildUrl(latitude, longitude));
+
+			if (!httpResponse.IsSuccessStatusCode)
+			{
+				throw new WeatherUnavailableException(WeatherUnavailableException.BadResponseMessage);
+			}
+
+			response = await httpResponse.Content.ReadFromJsonAsync<OpenMeteoResponse>();
+		}
+		catch (HttpRequestException ex)
+		{
+			// DNS failure, connection refused, connection dropped...
+			throw new WeatherUnavailableException(WeatherUnavailableException.UnreachableMessage, ex);
+		}
+		catch (TaskCanceledException ex)
+		{
+			// HttpClient reports a timeout as a cancelled task.
+			throw new WeatherUnavailableException(WeatherUnavailableException.UnreachableMessage, ex);
+		}
+		catch (JsonException ex)
+		{
+			throw new WeatherUnavailableException(WeatherUnavailableException.BadResponseMessage, ex);
+		}
 
 		return response?.Current?.ToWeatherInfo()
-			?? throw new InvalidOperationException("The weather response did not contain current weather.");
+			?? throw new WeatherUnavailableException(WeatherUnavailableException.BadResponseMessage);
 	}
 
 	public static string BuildUrl(double latitude, double longitude)

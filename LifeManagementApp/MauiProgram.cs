@@ -27,7 +27,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
 		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
 		builder.Services.AddSingleton<IDialogService, ShellDialogService>();
-		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>();
+		builder.Services.AddSingleton(Connectivity.Current);
+		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>(client =>
+			client.Timeout = OpenMeteoWeatherService.Timeout);
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();

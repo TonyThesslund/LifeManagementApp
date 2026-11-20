@@ -16,7 +16,7 @@ public class OpenMeteoWeatherServiceTests
 		HttpStatusCode statusCode = HttpStatusCode.OK, string content = ValidJson)
 	{
 		var handler = new FakeHttpMessageHandler(statusCode, content);
-		return (new OpenMeteoWeatherService(new HttpClient(handler)), handler);
+		return (new OpenMeteoWeatherService(new HttpClient(handler), new FakeConnectivity()), handler);
 	}
 
 	[Fact]
