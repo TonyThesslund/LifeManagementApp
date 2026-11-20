@@ -16,6 +16,8 @@
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}" />
+        <!-- No big page title above the tabs: the selected tab already says which page this is -->
+        <Setter Property="Shell.NavBarIsVisible" Value="False" />
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
@@ -53,6 +55,12 @@
     </Style>
 
     <Style TargetType="Label" BasedOn="{StaticResource BaseLabel}" />
+
+    <!-- Heading at the top of a page, e.g. "Edit to-do" -->
+    <Style TargetType="Label" x:Key="PageHeading" BasedOn="{StaticResource BaseLabel}">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="26" />
+    </Style>
 
     <!-- Heading of a section on a page, e.g. "Top to-dos" or "Categories" -->
     <Style TargetType="Label" x:Key="SectionHeading" BasedOn="{StaticResource BaseLabel}">

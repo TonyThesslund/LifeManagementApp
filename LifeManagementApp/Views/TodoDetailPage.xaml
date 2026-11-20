@@ -10,6 +10,9 @@
     <ScrollView>
         <VerticalStackLayout Style="{StaticResource PageColumn}">
 
+            <Label Text="{Binding PageTitle}"
+                   Style="{StaticResource PageHeading}" />
+
             <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="18">
 
