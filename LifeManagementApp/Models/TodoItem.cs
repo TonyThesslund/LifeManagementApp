@@ -13,4 +13,8 @@ public class TodoItem
 	public DateTime DueDate { get; set; } = DateTime.Today;
 
 	public bool IsDone { get; set; }
+
+	public int? CategoryId { get; set; }
+
+	public Category? Category { get; set; }
 }
