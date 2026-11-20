@@ -69,7 +69,7 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 10 | Bindings + converters | `x:DataType` everywhere, converters (e.g. readable sort order, priority color) |
 | 11 | Done, edit, delete *(bonus)* | Mark a to-do done, edit and delete it from the list with a checkbox and a delete button |
 | 12 | Categories and filtering *(bonus)* | Category picker on the add/edit page, category filter on the to-do list |
-| 13 | Settings page *(bonus)* | Settings tab: weather location (city search) and kitesurf wind limit, saved with `Preferences` |
+| 13 | Settings page *(bonus)* | Settings tab: weather location (city search), kitesurf wind limit and light / dark theme, saved with `Preferences` |
 | 14 | Remaining tests | Fill any gaps in test coverage |
 | 15 | Documentation | Final README: description, how to run, class diagram, AI use |
 
