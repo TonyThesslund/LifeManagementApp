@@ -69,13 +69,9 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 10 | Bindings + converters | `x:DataType` everywhere, converters (e.g. readable sort order, priority color) |
 | 11 | Done, edit, delete *(bonus)* | Mark a to-do done, edit and delete it with `SwipeView` |
 | 12 | Categories and filtering *(bonus)* | Category picker on the add/edit page, category filter on the to-do list |
-| 13 | Device location *(bonus)* | `ILocationService` with Geolocation and Vaasa as fallback; Home uses it |
-| 14 | Settings page *(bonus)* | Settings tab: location (device or chosen city) and kitesurf wind limit, saved with `Preferences` |
-| 15 | Dark theme *(bonus)* | Light / dark / system theme choice on the settings page, colors that work in both |
-| 16 | Hourly forecast *(bonus)* | Hourly wind forecast for today and the "best kite window today" on Home |
-| 17 | Offline weather *(bonus)* | Cache the latest weather and show it, marked as cached, when offline |
-| 18 | Remaining tests | Fill any gaps in test coverage |
-| 19 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 13 | Settings page *(bonus)* | Settings tab: weather location (city search) and kitesurf wind limit, saved with `Preferences` |
+| 14 | Remaining tests | Fill any gaps in test coverage |
+| 15 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 
