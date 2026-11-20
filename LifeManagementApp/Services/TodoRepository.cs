@@ -20,13 +20,16 @@ public class TodoRepository(IDbContextFactory<AppDbContext> dbFactory) : ITodoRe
 			query = query.Where(t => t.CategoryId == categoryId);
 		}
 
+		// Unfinished to-dos first (false sorts before true), then the chosen order within each group
+		var byDone = query.OrderBy(t => t.IsDone);
+
 		query = sortOrder switch
 		{
-			TodoSortOrder.DueDate => query
-				.OrderBy(t => t.DueDate)
+			TodoSortOrder.DueDate => byDone
+				.ThenBy(t => t.DueDate)
 				.ThenByDescending(t => t.Priority),
-			_ => query
-				.OrderByDescending(t => t.Priority)
+			_ => byDone
+				.ThenByDescending(t => t.Priority)
 				.ThenBy(t => t.DueDate)
 		};
 

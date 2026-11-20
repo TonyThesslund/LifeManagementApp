@@ -53,14 +53,26 @@
                             <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
                                                   CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="*,Auto"
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto"
                               RowDefinitions="Auto,Auto"
-                              RowSpacing="4">
-                            <Label Text="{Binding Title}"
+                              RowSpacing="4"
+                              ColumnSpacing="8">
+                            <Grid Grid.RowSpan="2"
+                                  VerticalOptions="Center">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                                          CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                                <!-- InputTransparent: the tap goes to the Grid's command, the CheckBox only shows the state -->
+                                <CheckBox IsChecked="{Binding IsDone, Mode=OneWay}"
+                                          InputTransparent="True" />
+                            </Grid>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Title}"
                                    TextDecorations="{Binding IsDone, Converter={StaticResource BoolToStrikethrough}}"
                                    FontSize="16"
                                    FontAttributes="Bold" />
-                            <Border Grid.Column="1"
+                            <Border Grid.Column="2"
                                     Padding="8,2"
                                     StrokeShape="RoundRectangle 10"
                                     StrokeThickness="0"
@@ -70,12 +82,21 @@
                                        TextColor="{StaticResource OffBlack}" />
                             </Border>
                             <Label Grid.Row="1"
+                                   Grid.Column="1"
                                    Text="{Binding Category.Name, TargetNullValue='No category', FallbackValue='No category'}"
                                    TextColor="{StaticResource Gray500}" />
                             <Label Grid.Row="1"
-                                   Grid.Column="1"
+                                   Grid.Column="2"
                                    Text="{Binding DueDate, StringFormat='{0:d}'}"
                                    TextColor="{StaticResource Gray500}" />
+                            <Button Grid.Column="3"
+                                    Grid.RowSpan="2"
+                                    Text="Delete"
+                                    VerticalOptions="Center"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource DeleteRed}"
+                                    Command="{Binding DeleteTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                    CommandParameter="{Binding .}" />
                         </Grid>
                     </Border>
                 </DataTemplate>
