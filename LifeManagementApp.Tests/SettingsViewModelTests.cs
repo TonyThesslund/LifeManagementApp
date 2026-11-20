@@ -228,4 +228,21 @@ public class SettingsViewModelTests
 	{
 		Assert.Equal([ThemeSetting.System, ThemeSetting.Light, ThemeSetting.Dark], CreateViewModel().Themes);
 	}
+
+	[Fact]
+	public async Task Search_WhileSearching_IsIgnored()
+	{
+		_geocoding.Results = [Helsinki];
+		_geocoding.Gate = new TaskCompletionSource();
+		var viewModel = CreateViewModel();
+		viewModel.SearchText = "Helsinki";
+		var first = viewModel.SearchCommand.ExecuteAsync(null);
+
+		var second = viewModel.SearchCommand.ExecuteAsync(null);
+		_geocoding.Gate.SetResult();
+		await Task.WhenAll(first, second);
+
+		Assert.Equal(1, _geocoding.CallCount);
+		Assert.Equal([Helsinki], viewModel.SearchResults);
+	}
 }

@@ -263,4 +263,20 @@ public class TodoListViewModelTests
 
 		Assert.Equal(["One", "Two"], viewModel.Todos.Select(t => t.Title));
 	}
+
+	[Fact]
+	public async Task Load_WhileLoading_IsIgnored()
+	{
+		_repository.Gate = new TaskCompletionSource();
+		var viewModel = CreateViewModel();
+		var first = viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		// Changing the sort order asks for a reload while the first one is still running
+		viewModel.SortOrder = TodoSortOrder.DueDate;
+		_repository.Gate.SetResult();
+		await first;
+
+		Assert.Equal(1, _repository.GetAllCallCount);
+		Assert.False(viewModel.IsBusy);
+	}
 }
