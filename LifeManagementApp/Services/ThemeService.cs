@@ -34,7 +34,8 @@ public class ThemeService : IThemeService
 	/// <summary>
 	/// UserAppTheme changes MAUI's colors, but WinUI's own controls keep drawing in the Windows theme.
 	/// In Light mode on a dark Windows, text fields then become invisible on the white page,
-	/// so the native window content is told the theme as well.
+	/// so the native window content is told the theme as well. The minimize, maximize and close
+	/// buttons are drawn by Windows, so they get their colors here too.
 	/// </summary>
 	public static void ApplyToWindows(Window window, ThemeSetting theme)
 	{
@@ -47,6 +48,27 @@ public class ThemeService : IThemeService
 				ThemeSetting.Dark => Microsoft.UI.Xaml.ElementTheme.Dark,
 				_ => Microsoft.UI.Xaml.ElementTheme.Default
 			};
+		}
+
+		if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window { AppWindow.TitleBar: { } titleBar })
+		{
+			// System follows Windows, so the actual theme is asked from MAUI
+			var dark = theme == ThemeSetting.Dark
+				|| (theme == ThemeSetting.System && Application.Current?.PlatformAppTheme == AppTheme.Dark);
+
+			var foreground = dark ? Windows.UI.Color.FromArgb(255, 0xE4, 0xEE, 0xF7) : Windows.UI.Color.FromArgb(255, 0x0F, 0x22, 0x33);
+			var inactive = dark ? Windows.UI.Color.FromArgb(255, 0x93, 0xA9, 0xBE) : Windows.UI.Color.FromArgb(255, 0x51, 0x67, 0x7C);
+			var hover = dark ? Windows.UI.Color.FromArgb(40, 255, 255, 255) : Windows.UI.Color.FromArgb(24, 0, 0, 0);
+			var transparent = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+
+			titleBar.ButtonForegroundColor = foreground;
+			titleBar.ButtonHoverForegroundColor = foreground;
+			titleBar.ButtonPressedForegroundColor = foreground;
+			titleBar.ButtonInactiveForegroundColor = inactive;
+			titleBar.ButtonBackgroundColor = transparent;
+			titleBar.ButtonInactiveBackgroundColor = transparent;
+			titleBar.ButtonHoverBackgroundColor = hover;
+			titleBar.ButtonPressedBackgroundColor = hover;
 		}
 #endif
 	}
