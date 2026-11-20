@@ -7,8 +7,18 @@
              x:DataType="vm:TodoListViewModel"
              Title="To-dos">
 
-    <Grid>
-        <CollectionView ItemsSource="{Binding Todos}"
+    <Grid RowDefinitions="Auto,*">
+        <HorizontalStackLayout Margin="16,8,16,0"
+                               Spacing="8">
+            <Label Text="Sort by"
+                   VerticalOptions="Center" />
+            <Picker ItemsSource="{Binding SortOrders}"
+                    SelectedItem="{Binding SortOrder}"
+                    WidthRequest="160" />
+        </HorizontalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Todos}"
                         Margin="16,8">
             <CollectionView.EmptyView>
                 <Label Text="No to-dos yet."
@@ -47,7 +57,8 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <ActivityIndicator IsRunning="{Binding IsBusy}"
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center"
                            VerticalOptions="Center" />

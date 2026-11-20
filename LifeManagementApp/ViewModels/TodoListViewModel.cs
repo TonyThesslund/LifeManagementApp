@@ -17,8 +17,18 @@ public partial class TodoListViewModel : ObservableObject
 
 	public ObservableCollection<TodoItem> Todos { get; } = [];
 
+	public IReadOnlyList<TodoSortOrder> SortOrders { get; } = Enum.GetValues<TodoSortOrder>();
+
+	[ObservableProperty]
+	public partial TodoSortOrder SortOrder { get; set; } = TodoSortOrder.Priority;
+
 	[ObservableProperty]
 	public partial bool IsBusy { get; set; }
+
+	partial void OnSortOrderChanged(TodoSortOrder value)
+	{
+		LoadTodosCommand.Execute(null);
+	}
 
 	[RelayCommand]
 	private async Task LoadTodosAsync()
@@ -31,7 +41,7 @@ public partial class TodoListViewModel : ObservableObject
 		IsBusy = true;
 		try
 		{
-			var items = await _repository.GetAllAsync(TodoSortOrder.Priority);
+			var items = await _repository.GetAllAsync(SortOrder);
 
 			Todos.Clear();
 			foreach (var item in items)
