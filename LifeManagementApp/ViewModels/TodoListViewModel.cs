@@ -30,7 +30,28 @@ public partial class TodoListViewModel : ObservableObject
 	[ObservableProperty]
 	public partial bool IsBusy { get; set; }
 
+	/// <summary>Filter option that shows every to-do. Not stored in the database (Id 0).</summary>
+	public static Category AllCategories { get; } = new() { Id = 0, Name = "All categories" };
+
+	/// <summary>"All categories" first, then the categories from the database.</summary>
+	public ObservableCollection<Category> Filters { get; } = [AllCategories];
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(EmptyMessage))]
+	public partial Category SelectedFilter { get; set; } = AllCategories;
+
+	public string EmptyMessage => SelectedFilter == AllCategories
+		? "No to-dos yet."
+		: $"No to-dos in {SelectedFilter.Name}.";
+
+	private bool _categoriesLoaded;
+
 	partial void OnSortOrderChanged(TodoSortOrder value)
+	{
+		LoadTodosCommand.Execute(null);
+	}
+
+	partial void OnSelectedFilterChanged(Category value)
 	{
 		LoadTodosCommand.Execute(null);
 	}
@@ -86,7 +107,17 @@ public partial class TodoListViewModel : ObservableObject
 		IsBusy = true;
 		try
 		{
-			var items = await _repository.GetAllAsync(SortOrder);
+			if (!_categoriesLoaded)
+			{
+				foreach (var category in await _repository.GetCategoriesAsync())
+				{
+					Filters.Add(category);
+				}
+				_categoriesLoaded = true;
+			}
+
+			int? categoryId = SelectedFilter == AllCategories ? null : SelectedFilter.Id;
+			var items = await _repository.GetAllAsync(SortOrder, categoryId);
 
 			Todos.Clear();
 			foreach (var item in items)

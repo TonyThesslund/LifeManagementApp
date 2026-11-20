@@ -155,4 +155,93 @@ public class TodoDetailViewModelTests
 		Assert.Equal(1, _navigation.BackCount);
 		Assert.Equal("New to-do", _viewModel.PageTitle);
 	}
+
+	[Fact]
+	public async Task LoadCategories_GivesNoCategoryFirst_ThenDatabaseCategories()
+	{
+		await _viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+
+		Assert.Equal(["No category", "Personal", "Work", "Shopping"], _viewModel.Categories.Select(c => c.Name));
+		Assert.Same(TodoDetailViewModel.NoCategory, _viewModel.SelectedCategory);
+	}
+
+	[Fact]
+	public async Task LoadCategories_Twice_LoadsOnlyOnce()
+	{
+		await _viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+		await _viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+
+		Assert.Equal(1, _repository.CategoriesCallCount);
+		Assert.Equal(4, _viewModel.Categories.Count);
+	}
+
+	[Fact]
+	public async Task SaveNew_WithCategory_StoresCategoryId()
+	{
+		await _viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+		_viewModel.Title = "Buy milk";
+		_viewModel.SelectedCategory = _viewModel.Categories.Single(c => c.Name == "Shopping");
+
+		await _viewModel.SaveCommand.ExecuteAsync(null);
+
+		Assert.Equal(3, Assert.Single(_repository.Added).CategoryId);
+	}
+
+	[Fact]
+	public async Task SaveNew_WithNoCategory_StoresNull()
+	{
+		await _viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+		_viewModel.Title = "Buy milk";
+
+		await _viewModel.SaveCommand.ExecuteAsync(null);
+
+		Assert.Null(Assert.Single(_repository.Added).CategoryId);
+	}
+
+	[Fact]
+	public async Task OpenExisting_PreselectsItsCategory()
+	{
+		var existing = _repository.Seed(new TodoItem { Title = "Finish report", CategoryId = 2 });
+
+		await OpenWithIdAsync(existing.Id);
+
+		Assert.Equal("Work", _viewModel.SelectedCategory.Name);
+	}
+
+	[Fact]
+	public async Task OpenExisting_WithoutCategory_PreselectsNoCategory()
+	{
+		var existing = _repository.Seed(new TodoItem { Title = "Book dentist", CategoryId = null });
+
+		await OpenWithIdAsync(existing.Id);
+
+		Assert.Same(TodoDetailViewModel.NoCategory, _viewModel.SelectedCategory);
+	}
+
+	[Fact]
+	public async Task OpenExisting_WhilePageAlsoLoadsCategories_LoadsThemOnce()
+	{
+		var existing = _repository.Seed(new TodoItem { Title = "Finish report", CategoryId = 2 });
+
+		_viewModel.LoadCategoriesCommand.Execute(null);
+		await OpenWithIdAsync(existing.Id);
+
+		Assert.Equal(1, _repository.CategoriesCallCount);
+		Assert.Equal(4, _viewModel.Categories.Count);
+		Assert.Equal("Work", _viewModel.SelectedCategory.Name);
+	}
+
+	[Theory]
+	[InlineData("Shopping", 3)]
+	[InlineData("No category", null)]
+	public async Task SaveExisting_ChangedCategory_IsStored(string chosen, int? expectedId)
+	{
+		var existing = _repository.Seed(new TodoItem { Title = "Finish report", CategoryId = 2 });
+		await OpenWithIdAsync(existing.Id);
+
+		_viewModel.SelectedCategory = _viewModel.Categories.Single(c => c.Name == chosen);
+		await _viewModel.SaveCommand.ExecuteAsync(null);
+
+		Assert.Equal(expectedId, Assert.Single(_repository.Updated).CategoryId);
+	}
 }

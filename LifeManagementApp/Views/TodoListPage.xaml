@@ -21,13 +21,20 @@
                     SelectedItem="{Binding SortOrder}"
                     ItemDisplayBinding="{Binding ., Converter={StaticResource SortOrderToText}, x:DataType=models:TodoSortOrder}"
                     WidthRequest="160" />
+            <Label Text="Category"
+                   Margin="16,0,0,0"
+                   VerticalOptions="Center" />
+            <Picker ItemsSource="{Binding Filters}"
+                    SelectedItem="{Binding SelectedFilter}"
+                    ItemDisplayBinding="{Binding Name, x:DataType=models:Category}"
+                    WidthRequest="180" />
         </HorizontalStackLayout>
 
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Todos}"
                         Margin="16,8">
             <CollectionView.EmptyView>
-                <Label Text="No to-dos yet."
+                <Label Text="{Binding EmptyMessage}"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"
                        TextColor="{StaticResource Gray500}" />
