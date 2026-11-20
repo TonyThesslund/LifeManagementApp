@@ -1,4 +1,7 @@
 ﻿using LifeManagementApp.Data;
+using LifeManagementApp.Services;
+using LifeManagementApp.ViewModels;
+using LifeManagementApp.Views;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +23,14 @@ public static class MauiProgram
 		var dbPath = Path.Combine(FileSystem.AppDataDirectory, "lifemanagement.db");
 		builder.Services.AddDbContextFactory<AppDbContext>(options =>
 			options.UseSqlite($"Data Source={dbPath}"));
+
+		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
+
+		builder.Services.AddSingleton<HomeViewModel>();
+		builder.Services.AddSingleton<HomePage>();
+
+		builder.Services.AddSingleton<TodoListViewModel>();
+		builder.Services.AddSingleton<TodoListPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();
