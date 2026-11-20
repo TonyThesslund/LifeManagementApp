@@ -13,8 +13,17 @@ public class SettingsViewModelTests
 	private readonly FakeSettingsService _settings = new();
 	private readonly FakeGeocodingService _geocoding = new();
 	private readonly FakeThemeService _themes = new();
+	private readonly FakeTodoRepository _repository = new();
+	private readonly FakeDialogService _dialogs = new();
 
-	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding, _themes);
+	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding, _themes, _repository, _dialogs);
+
+	private async Task<SettingsViewModel> CreateWithCategoriesAsync()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+		return viewModel;
+	}
 
 	[Fact]
 	public void Opens_WithSavedSettings()
@@ -244,5 +253,129 @@ public class SettingsViewModelTests
 
 		Assert.Equal(1, _geocoding.CallCount);
 		Assert.Equal([Helsinki], viewModel.SearchResults);
+	}
+
+	[Fact]
+	public async Task LoadCategories_ShowsCategoriesFromRepository()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+
+		Assert.Equal(["Personal", "Work", "Shopping"], viewModel.Categories.Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task LoadCategories_Twice_ReplacesListInsteadOfAppending()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+
+		await viewModel.LoadCategoriesCommand.ExecuteAsync(null);
+
+		Assert.Equal(3, viewModel.Categories.Count);
+	}
+
+	[Fact]
+	public async Task AddCategory_ValidName_IsSaved_ShownAndFieldCleared()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		viewModel.NewCategoryName = "  Hobbies ";
+
+		await viewModel.AddCategoryCommand.ExecuteAsync(null);
+
+		Assert.Contains(_repository.Categories, c => c.Name == "Hobbies");
+		Assert.Contains("Hobbies", viewModel.Categories.Select(c => c.Name));
+		Assert.Equal(string.Empty, viewModel.NewCategoryName);
+		Assert.False(viewModel.HasCategoryError);
+	}
+
+	[Theory]
+	[InlineData("Work")]
+	[InlineData("work")]
+	[InlineData(" WORK ")]
+	public async Task AddCategory_DuplicateName_ShowsMessage_AndIsNotSaved(string name)
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		viewModel.NewCategoryName = name;
+
+		await viewModel.AddCategoryCommand.ExecuteAsync(null);
+
+		Assert.Equal(3, _repository.Categories.Count);
+		Assert.Equal($"A category called \"{name.Trim()}\" already exists.", viewModel.CategoryError);
+		Assert.Equal(name, viewModel.NewCategoryName);
+	}
+
+	[Fact]
+	public async Task AddCategory_TooLongName_ShowsMessage_AndIsNotSaved()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		viewModel.NewCategoryName = new string('x', Category.MaxNameLength + 1);
+
+		await viewModel.AddCategoryCommand.ExecuteAsync(null);
+
+		Assert.Equal(3, _repository.Categories.Count);
+		Assert.Equal($"A category name can be at most {Category.MaxNameLength} characters.", viewModel.CategoryError);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("   ")]
+	public async Task AddCategory_EmptyName_CannotExecute_AndIsNotSaved(string name)
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		viewModel.NewCategoryName = name;
+
+		Assert.False(viewModel.AddCategoryCommand.CanExecute(null));
+		await viewModel.AddCategoryCommand.ExecuteAsync(null);
+
+		Assert.Equal(3, _repository.Categories.Count);
+	}
+
+	[Fact]
+	public async Task ChangingName_ClearsCategoryError()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		viewModel.NewCategoryName = "Work";
+		await viewModel.AddCategoryCommand.ExecuteAsync(null);
+		Assert.True(viewModel.HasCategoryError);
+
+		viewModel.NewCategoryName = "Workout";
+
+		Assert.False(viewModel.HasCategoryError);
+	}
+
+	[Fact]
+	public async Task DeleteCategory_Confirmed_DeletesAndRemovesFromList()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		var work = viewModel.Categories.Single(c => c.Name == "Work");
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(work);
+
+		Assert.Equal([work.Id], _repository.DeletedCategories);
+		Assert.Equal(["Personal", "Shopping"], viewModel.Categories.Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task DeleteCategory_Cancelled_KeepsIt()
+	{
+		_dialogs.ConfirmResult = false;
+		var viewModel = await CreateWithCategoriesAsync();
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(viewModel.Categories.Single(c => c.Name == "Work"));
+
+		Assert.Empty(_repository.DeletedCategories);
+		Assert.Equal(3, viewModel.Categories.Count);
+	}
+
+	[Fact]
+	public async Task DeleteCategory_AsksOnce_NamingIt_AndSayingTodosAreKept()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(viewModel.Categories.Single(c => c.Name == "Work"));
+
+		var confirmation = Assert.Single(_dialogs.Confirmations);
+		Assert.Contains("\"Work\"", confirmation.Message);
+		Assert.Contains("to-dos are kept", confirmation.Message);
+		Assert.Equal("Delete", confirmation.Accept);
 	}
 }

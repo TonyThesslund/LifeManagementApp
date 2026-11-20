@@ -44,8 +44,6 @@ public partial class TodoListViewModel : ObservableObject
 		? "No to-dos yet."
 		: $"No to-dos in {SelectedFilter.Name}.";
 
-	private bool _categoriesLoaded;
-
 	partial void OnSortOrderChanged(TodoSortOrder value)
 	{
 		LoadTodosCommand.Execute(null);
@@ -53,6 +51,13 @@ public partial class TodoListViewModel : ObservableObject
 
 	partial void OnSelectedFilterChanged(Category value)
 	{
+		// The picker can report "nothing selected" while its items change; treat that as all categories
+		if (value is null)
+		{
+			SelectedFilter = AllCategories;
+			return;
+		}
+
 		LoadTodosCommand.Execute(null);
 	}
 
@@ -107,14 +112,8 @@ public partial class TodoListViewModel : ObservableObject
 		IsBusy = true;
 		try
 		{
-			if (!_categoriesLoaded)
-			{
-				foreach (var category in await _repository.GetCategoriesAsync())
-				{
-					Filters.Add(category);
-				}
-				_categoriesLoaded = true;
-			}
+			// Reloaded every time, so categories added or deleted in Settings show up here
+			UpdateFilters(await _repository.GetCategoriesAsync());
 
 			int? categoryId = SelectedFilter == AllCategories ? null : SelectedFilter.Id;
 			var items = await _repository.GetAllAsync(SortOrder, categoryId);
@@ -129,5 +128,44 @@ public partial class TodoListViewModel : ObservableObject
 		{
 			IsBusy = false;
 		}
+	}
+
+	/// <summary>
+	/// Brings <see cref="Filters"/> in line with the categories in the database. Categories that are still there
+	/// keep the same object; the list isn't cleared and refilled.
+	/// </summary>
+	private void UpdateFilters(List<Category> categories)
+	{
+		var ids = categories.Select(c => c.Id).ToHashSet();
+
+		if (SelectedFilter != AllCategories && !ids.Contains(SelectedFilter.Id))
+		{
+			// The chosen category was deleted. Switching first keeps the picker from losing its selection.
+			// The reload this asks for is skipped while busy; this load continues with "All categories".
+			SelectedFilter = AllCategories;
+		}
+
+		var selected = SelectedFilter;
+
+		for (var i = Filters.Count - 1; i >= 1; i--)
+		{
+			if (!ids.Contains(Filters[i].Id))
+			{
+				Filters.RemoveAt(i);
+			}
+		}
+
+		// Categories come sorted by name; insert new ones at their place after "All categories"
+		for (var i = 0; i < categories.Count; i++)
+		{
+			if (!Filters.Skip(1).Any(f => f.Id == categories[i].Id))
+			{
+				Filters.Insert(i + 1, categories[i]);
+			}
+		}
+
+		// The picker keeps its selected position, not item, when items are added or removed before it,
+		// and passes the item now at that position back here. Put the chosen filter back.
+		SelectedFilter = selected;
 	}
 }

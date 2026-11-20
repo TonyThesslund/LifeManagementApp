@@ -103,6 +103,33 @@ public class FakeTodoRepository : ITodoRepository
 		return Task.FromResult(Categories.ToList());
 	}
 
+	public List<int> DeletedCategories { get; } = [];
+
+	public Task<bool> CategoryExistsAsync(string name)
+	{
+		return Task.FromResult(Categories.Any(c =>
+			string.Equals(c.Name, name.Trim(), StringComparison.CurrentCultureIgnoreCase)));
+	}
+
+	public Task<Category> AddCategoryAsync(string name)
+	{
+		var category = new Category { Id = Categories.Max(c => c.Id) + 1, Name = name.Trim() };
+		Categories.Add(category);
+		return Task.FromResult(category);
+	}
+
+	public Task DeleteCategoryAsync(int id)
+	{
+		DeletedCategories.Add(id);
+		Categories.RemoveAll(c => c.Id == id);
+		foreach (var item in Items.Where(t => t.CategoryId == id))
+		{
+			item.CategoryId = null;
+		}
+
+		return Task.CompletedTask;
+	}
+
 	// The real repository returns a new object for every read, so the fake does too.
 	private static TodoItem Copy(TodoItem item) => new()
 	{
