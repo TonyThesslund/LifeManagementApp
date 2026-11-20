@@ -17,7 +17,7 @@
                        MaxLength="200" />
                 <Label Text="{Binding TitleError}"
                        IsVisible="{Binding HasTitleError}"
-                       TextColor="Red" />
+                       Style="{StaticResource ErrorText}" />
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="4">

@@ -14,31 +14,30 @@
             <Border Padding="16"
                     StrokeShape="RoundRectangle 8"
                     StrokeThickness="0"
-                    BackgroundColor="{StaticResource Primary}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
                     IsVisible="{Binding IsKitesurfWeather}">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="🪁 Kitesurf weather!"
                            FontSize="24"
                            FontAttributes="Bold"
-                           TextColor="White"
+                           TextColor="{StaticResource OnAccent}"
                            HorizontalOptions="Center" />
                     <Label Text="{Binding KitesurfReason}"
-                           TextColor="White"
+                           TextColor="{StaticResource OnAccent}"
                            HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
 
             <Border Padding="16"
-                    StrokeShape="RoundRectangle 8"
-                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                    Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Text="{Binding LocationName, StringFormat='Weather in {0}'}"
-                               FontSize="20"
-                               FontAttributes="Bold"
+                               Style="{StaticResource SectionHeading}"
                                VerticalOptions="Center" />
                         <Button Grid.Column="1"
                                 Text="Refresh"
+                                Style="{StaticResource SecondaryButton}"
                                 Command="{Binding LoadWeatherCommand}" />
                     </Grid>
 
@@ -50,13 +49,13 @@
                           IsVisible="{Binding HasWeather}">
                         <VerticalStackLayout>
                             <Label Text="Temperature"
-                                   TextColor="{StaticResource Gray500}" />
+                                   Style="{StaticResource Caption}" />
                             <Label Text="{Binding Weather.Temperature, StringFormat='{0:0.0} °C'}"
                                    FontSize="28" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1">
                             <Label Text="Wind"
-                                   TextColor="{StaticResource Gray500}" />
+                                   Style="{StaticResource Caption}" />
                             <Label Text="{Binding Weather.WindSpeed, StringFormat='{0:0.0} m/s'}"
                                    FontSize="28" />
                         </VerticalStackLayout>
@@ -64,30 +63,28 @@
 
                     <Label Text="{Binding WeatherTime, StringFormat='Measured at {0} local time'}"
                            IsVisible="{Binding HasWeather}"
-                           TextColor="{StaticResource Gray500}" />
+                           Style="{StaticResource Caption}" />
 
                     <Label Text="{Binding WeatherError}"
                            IsVisible="{Binding HasWeatherError}"
-                           TextColor="Red" />
+                           Style="{StaticResource ErrorText}" />
                 </VerticalStackLayout>
             </Border>
 
             <Label Text="Top to-dos"
-                   FontSize="20"
-                   FontAttributes="Bold" />
+                   Style="{StaticResource SectionHeading}" />
 
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}"
                                  Spacing="8">
                 <BindableLayout.EmptyView>
                     <Label Text="Nothing to do. Enjoy your day!"
-                           TextColor="{StaticResource Gray500}" />
+                           Style="{StaticResource Caption}" />
                 </BindableLayout.EmptyView>
 
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:TodoItem">
                         <Border Padding="12"
-                                StrokeShape="RoundRectangle 8"
-                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                Style="{StaticResource Card}">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenTodoCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
                                                       CommandParameter="{Binding .}" />
@@ -105,12 +102,12 @@
                                         VerticalOptions="Center"
                                         BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColor}}">
                                     <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
-                                           TextColor="{StaticResource OffBlack}" />
+                                           TextColor="{StaticResource OnPriority}" />
                                 </Border>
                                 <Label Grid.Row="1"
                                        Grid.ColumnSpan="2"
                                        Text="{Binding DueDate, StringFormat='Due {0:d}'}"
-                                       TextColor="{StaticResource Gray500}" />
+                                       Style="{StaticResource Caption}" />
                             </Grid>
                         </Border>
                     </DataTemplate>

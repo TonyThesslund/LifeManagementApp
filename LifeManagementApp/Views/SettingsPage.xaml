@@ -16,17 +16,16 @@
             <!-- Weather location -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Weather location"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label>
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Current: "
-                                  TextColor="{StaticResource Gray500}" />
+                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                             <Span Text="{Binding CurrentLocation.Name}"
                                   FontAttributes="Bold" />
                             <Span Text="{Binding CurrentLocation.Details, StringFormat=' ({0})', TargetNullValue=''}"
-                                  TextColor="{StaticResource Gray500}" />
+                                  TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -47,15 +46,14 @@
 
                 <Label Text="{Binding SearchMessage}"
                        IsVisible="{Binding HasSearchMessage}"
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
 
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding SearchResults}"
                                      Spacing="8">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:WeatherLocation">
                             <Border Padding="12"
-                                    StrokeShape="RoundRectangle 8"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                    Style="{StaticResource Card}">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding SelectLocationCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
                                                           CommandParameter="{Binding .}" />
@@ -64,7 +62,7 @@
                                     <Label Text="{Binding Name}"
                                            FontAttributes="Bold" />
                                     <Label Text="{Binding Details}"
-                                           TextColor="{StaticResource Gray500}" />
+                                           Style="{StaticResource Caption}" />
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
@@ -75,10 +73,9 @@
             <!-- Kitesurf wind limit -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Kitesurf wind limit"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label Text="Home shows the kitesurf notice when the wind is above this."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
                 <HorizontalStackLayout Spacing="8">
                     <Entry Text="{Binding WindLimitText}"
                            Keyboard="Numeric"
@@ -88,31 +85,28 @@
                 </HorizontalStackLayout>
                 <Label Text="{Binding WindLimitError}"
                        IsVisible="{Binding HasWindLimitError}"
-                       TextColor="Red" />
+                       Style="{StaticResource ErrorText}" />
             </VerticalStackLayout>
 
             <!-- Categories -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Categories"
-                       FontSize="20"
-                       FontAttributes="Bold" />
+                       Style="{StaticResource SectionHeading}" />
                 <Label Text="Used to group to-dos and filter the to-do list."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource Caption}" />
 
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}"
                                      Spacing="8">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Category">
                             <Border Padding="12,4"
-                                    StrokeShape="RoundRectangle 8"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                    Style="{StaticResource Card}">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="{Binding Name}"
                                            VerticalOptions="Center" />
                                     <Button Grid.Column="1"
                                             Text="Delete"
-                                            BackgroundColor="Transparent"
-                                            TextColor="{StaticResource DeleteRed}"
+                                            Style="{StaticResource DangerButton}"
                                             Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel}"
                                             CommandParameter="{Binding .}" />
                                 </Grid>
@@ -133,16 +127,15 @@
                 </Grid>
                 <Label Text="{Binding CategoryError}"
                        IsVisible="{Binding HasCategoryError}"
-                       TextColor="Red" />
+                       Style="{StaticResource ErrorText}" />
             </VerticalStackLayout>
 
             <!-- Theme -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Theme"
-                       FontSize="20"
-                       FontAttributes="Bold" />
-                <Label Text="System follows the Windows setting."
-                       TextColor="{StaticResource Gray500}" />
+                       Style="{StaticResource SectionHeading}" />
+                <Label Text="System follows your computer's light or dark setting."
+                       Style="{StaticResource Caption}" />
                 <Picker ItemsSource="{Binding Themes}"
                         SelectedItem="{Binding SelectedTheme}"
                         HorizontalOptions="Start"
