@@ -23,18 +23,18 @@
     <Color x:Key="AccentDark">#FDE047</Color>
     <Color x:Key="OnAccent">#2A2000</Color>
 
-    <!-- Backgrounds -->
-    <Color x:Key="PageBackgroundLight">#F3F7FB</Color>
+    <!-- Backgrounds: warm cream in light mode, softer on the eyes than pure white -->
+    <Color x:Key="PageBackgroundLight">#F4EFE6</Color>
     <Color x:Key="PageBackgroundDark">#08121C</Color>
-    <Color x:Key="SurfaceLight">#FFFFFF</Color>
+    <Color x:Key="SurfaceLight">#FBF8F2</Color>
     <Color x:Key="SurfaceDark">#0F1C2A</Color>
-    <Color x:Key="SurfaceAltLight">#F1F6FB</Color>
+    <Color x:Key="SurfaceAltLight">#EFE8DB</Color>
     <Color x:Key="SurfaceAltDark">#142536</Color>
-    <Color x:Key="BorderLight">#D8E3EE</Color>
+    <Color x:Key="BorderLight">#E0D6C4</Color>
     <Color x:Key="BorderDark">#20354A</Color>
 
     <!-- Title bar and tabs -->
-    <Color x:Key="ShellLight">#FFFFFF</Color>
+    <Color x:Key="ShellLight">#FBF8F2</Color>
     <Color x:Key="ShellDark">#0B1724</Color>
 
     <!-- Text -->
