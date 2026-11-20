@@ -5,4 +5,21 @@
     xmlns:maui="using:Microsoft.Maui"
     xmlns:local="using:LifeManagementApp.WinUI">
 
+    <maui:MauiWinUIApplication.Resources>
+        <ResourceDictionary>
+            <!--
+                The app's sky blue instead of the Windows accent color, for the parts Windows draws itself:
+                selection bars in picker lists, focus lines under text fields, the chosen day in the calendar.
+                The light/dark colors of those parts are set in WindowsThemeColors.cs.
+            -->
+            <Color x:Key="SystemAccentColor">#0369A1</Color>
+            <Color x:Key="SystemAccentColorDark1">#0369A1</Color>
+            <Color x:Key="SystemAccentColorDark2">#075985</Color>
+            <Color x:Key="SystemAccentColorDark3">#0C4A6E</Color>
+            <Color x:Key="SystemAccentColorLight1">#0EA5E9</Color>
+            <Color x:Key="SystemAccentColorLight2">#38BDF8</Color>
+            <Color x:Key="SystemAccentColorLight3">#7DD3FC</Color>
+        </ResourceDictionary>
+    </maui:MauiWinUIApplication.Resources>
+
 </maui:MauiWinUIApplication>
