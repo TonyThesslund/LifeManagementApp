@@ -7,6 +7,11 @@
              x:DataType="vm:TodoListViewModel"
              Title="To-dos">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                     Command="{Binding AddTodoCommand}" />
+    </ContentPage.ToolbarItems>
+
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout Margin="16,8,16,0"
                                Spacing="8">
