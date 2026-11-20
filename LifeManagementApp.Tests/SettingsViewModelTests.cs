@@ -14,8 +14,9 @@ public class SettingsViewModelTests
 	private readonly FakeGeocodingService _geocoding = new();
 	private readonly FakeThemeService _themes = new();
 	private readonly FakeTodoRepository _repository = new();
+	private readonly FakeDialogService _dialogs = new();
 
-	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding, _themes, _repository);
+	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding, _themes, _repository, _dialogs);
 
 	private async Task<SettingsViewModel> CreateWithCategoriesAsync()
 	{
@@ -339,5 +340,42 @@ public class SettingsViewModelTests
 		viewModel.NewCategoryName = "Workout";
 
 		Assert.False(viewModel.HasCategoryError);
+	}
+
+	[Fact]
+	public async Task DeleteCategory_Confirmed_DeletesAndRemovesFromList()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+		var work = viewModel.Categories.Single(c => c.Name == "Work");
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(work);
+
+		Assert.Equal([work.Id], _repository.DeletedCategories);
+		Assert.Equal(["Personal", "Shopping"], viewModel.Categories.Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task DeleteCategory_Cancelled_KeepsIt()
+	{
+		_dialogs.ConfirmResult = false;
+		var viewModel = await CreateWithCategoriesAsync();
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(viewModel.Categories.Single(c => c.Name == "Work"));
+
+		Assert.Empty(_repository.DeletedCategories);
+		Assert.Equal(3, viewModel.Categories.Count);
+	}
+
+	[Fact]
+	public async Task DeleteCategory_AsksOnce_NamingIt_AndSayingTodosAreKept()
+	{
+		var viewModel = await CreateWithCategoriesAsync();
+
+		await viewModel.DeleteCategoryCommand.ExecuteAsync(viewModel.Categories.Single(c => c.Name == "Work"));
+
+		var confirmation = Assert.Single(_dialogs.Confirmations);
+		Assert.Contains("\"Work\"", confirmation.Message);
+		Assert.Contains("to-dos are kept", confirmation.Message);
+		Assert.Equal("Delete", confirmation.Accept);
 	}
 }

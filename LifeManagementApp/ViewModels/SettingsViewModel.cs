@@ -15,17 +15,20 @@ public partial class SettingsViewModel : ObservableObject
 	private readonly IGeocodingService _geocoding;
 	private readonly IThemeService _themeService;
 	private readonly ITodoRepository _repository;
+	private readonly IDialogService _dialogs;
 
 	public SettingsViewModel(
 		ISettingsService settings,
 		IGeocodingService geocoding,
 		IThemeService themeService,
-		ITodoRepository repository)
+		ITodoRepository repository,
+		IDialogService dialogs)
 	{
 		_settings = settings;
 		_geocoding = geocoding;
 		_themeService = themeService;
 		_repository = repository;
+		_dialogs = dialogs;
 		Load();
 	}
 
@@ -206,6 +209,23 @@ public partial class SettingsViewModel : ObservableObject
 
 		await _repository.AddCategoryAsync(name);
 		NewCategoryName = string.Empty;
+		await LoadCategoriesAsync();
+	}
+
+	[RelayCommand]
+	private async Task DeleteCategoryAsync(Category category)
+	{
+		var confirmed = await _dialogs.ConfirmAsync(
+			"Delete category",
+			$"Delete \"{category.Name}\"? Its to-dos are kept, without a category.",
+			"Delete",
+			"Cancel");
+		if (!confirmed)
+		{
+			return;
+		}
+
+		await _repository.DeleteCategoryAsync(category.Id);
 		await LoadCategoriesAsync();
 	}
 }
