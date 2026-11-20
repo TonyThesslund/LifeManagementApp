@@ -2,7 +2,9 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:LifeManagementApp.Converters"
+    xmlns:models="clr-namespace:LifeManagementApp.Models">
 
     <!--
         Styles without x:Key apply to every control of that type.
@@ -70,7 +72,55 @@
         <Setter Property="FontSize" Value="13" />
     </Style>
 
+    <!--
+        Due date of a to-do in a list row: "Overdue" in red, "Today" in the theme color, otherwise grey.
+        The label binds to the whole to-do: Text="{Binding ., Converter={StaticResource DueDateText}}"
+    -->
+    <Style TargetType="Label" x:Key="DueLabel" BasedOn="{StaticResource Caption}">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Style.Triggers>
+            <DataTrigger TargetType="Label" Value="{x:Static converters:DueStatus.Overdue}">
+                <DataTrigger.Binding>
+                    <Binding Path="." x:DataType="models:TodoItem">
+                        <Binding.Converter>
+                            <converters:DueStatusConverter />
+                        </Binding.Converter>
+                    </Binding>
+                </DataTrigger.Binding>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerLight}, Dark={StaticResource DangerDark}}" />
+            </DataTrigger>
+            <DataTrigger TargetType="Label" Value="{x:Static converters:DueStatus.Today}">
+                <DataTrigger.Binding>
+                    <Binding Path="." x:DataType="models:TodoItem">
+                        <Binding.Converter>
+                            <converters:DueStatusConverter />
+                        </Binding.Converter>
+                    </Binding>
+                </DataTrigger.Binding>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryTextLight}, Dark={StaticResource PrimaryTextDark}}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Containers -->
+
+    <!-- One row in a list card (Home's top to-dos, the to-do list) -->
+    <Style TargetType="Grid" x:Key="ListRow">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="ColumnSpacing" Value="14" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
+    </Style>
+
+    <!--
+        The rows of a list card sit 1 apart on a border-colored background,
+        so the gaps between them show as divider lines
+    -->
+    <Style TargetType="VerticalStackLayout" x:Key="ListRows">
+        <Setter Property="Spacing" Value="1" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" />
+    </Style>
 
     <Style TargetType="Border">
         <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" />
@@ -141,6 +191,17 @@
         <Setter Property="BorderWidth" Value="1" />
         <Setter Property="CornerRadius" Value="18" />
         <Setter Property="Padding" Value="14,6" />
+    </Style>
+
+    <!-- Small icon-only button, e.g. the bin that deletes a to-do -->
+    <Style TargetType="ImageButton" x:Key="IconButton">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="WidthRequest" Value="36" />
+        <Setter Property="HeightRequest" Value="36" />
+        <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
     <!-- Inputs -->

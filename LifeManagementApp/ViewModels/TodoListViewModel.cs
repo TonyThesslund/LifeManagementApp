@@ -20,7 +20,24 @@ public partial class TodoListViewModel : ObservableObject
 		_dialogs = dialogs;
 	}
 
+	/// <summary>All shown to-dos, unfinished first.</summary>
 	public ObservableCollection<TodoItem> Todos { get; } = [];
+
+	/// <summary>The unfinished to-dos, shown under "To do".</summary>
+	public ObservableCollection<TodoItem> OpenTodos { get; } = [];
+
+	/// <summary>The finished to-dos, shown under "Done".</summary>
+	public ObservableCollection<TodoItem> DoneTodos { get; } = [];
+
+	[ObservableProperty]
+	public partial bool HasOpenTodos { get; set; }
+
+	[ObservableProperty]
+	public partial bool HasDoneTodos { get; set; }
+
+	/// <summary>True when a load has finished and found nothing; shows the empty state.</summary>
+	[ObservableProperty]
+	public partial bool IsEmpty { get; set; }
 
 	public IReadOnlyList<TodoSortOrder> SortOrders { get; } = Enum.GetValues<TodoSortOrder>();
 
@@ -38,11 +55,17 @@ public partial class TodoListViewModel : ObservableObject
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(EmptyMessage))]
+	[NotifyPropertyChangedFor(nameof(EmptyHint))]
 	public partial Category SelectedFilter { get; set; } = AllCategories;
 
 	public string EmptyMessage => SelectedFilter == AllCategories
 		? "No to-dos yet."
 		: $"No to-dos in {SelectedFilter.Name}.";
+
+	/// <summary>What to do about an empty list, shown under <see cref="EmptyMessage"/>.</summary>
+	public string EmptyHint => SelectedFilter == AllCategories
+		? "Add your first to-do with the Add to-do button."
+		: "Pick another category, or add a to-do to this one.";
 
 	partial void OnSortOrderChanged(TodoSortOrder value)
 	{
@@ -119,10 +142,17 @@ public partial class TodoListViewModel : ObservableObject
 			var items = await _repository.GetAllAsync(SortOrder, categoryId);
 
 			Todos.Clear();
+			OpenTodos.Clear();
+			DoneTodos.Clear();
 			foreach (var item in items)
 			{
 				Todos.Add(item);
+				(item.IsDone ? DoneTodos : OpenTodos).Add(item);
 			}
+
+			HasOpenTodos = OpenTodos.Count > 0;
+			HasDoneTodos = DoneTodos.Count > 0;
+			IsEmpty = Todos.Count == 0;
 		}
 		finally
 		{

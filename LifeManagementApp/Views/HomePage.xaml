@@ -155,15 +155,11 @@
                         Command="{Binding GoToTodosCommand}" />
             </Grid>
 
-            <!--
-                One card with a row per to-do. The rows sit 1 apart on a border-colored background,
-                so the gaps between them show as divider lines.
-            -->
+            <!-- One card with a row per to-do, like the to-do list -->
             <Border Style="{StaticResource Card}"
                     Padding="0">
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}"
-                                     Spacing="1"
-                                     BackgroundColor="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}">
+                                     Style="{StaticResource ListRows}">
                     <BindableLayout.EmptyView>
                         <Label Text="Nothing to do. Enjoy your day!"
                                Style="{StaticResource Caption}"
@@ -174,9 +170,7 @@
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:TodoItem">
                             <Grid ColumnDefinitions="Auto,*,Auto"
-                                  ColumnSpacing="14"
-                                  Padding="16,14"
-                                  BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+                                  Style="{StaticResource ListRow}">
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding OpenTodoCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
                                                           CommandParameter="{Binding .}" />
@@ -203,10 +197,8 @@
                                     </Label.FormattedText>
                                 </Label>
                                 <Label Grid.Column="2"
-                                       Text="{Binding DueDate, StringFormat='{0:d}'}"
-                                       Style="{StaticResource Caption}"
-                                       FontFamily="OpenSansSemibold"
-                                       VerticalOptions="Center" />
+                                       Text="{Binding ., Converter={StaticResource DueDateText}}"
+                                       Style="{StaticResource DueLabel}" />
                             </Grid>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
