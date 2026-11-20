@@ -15,4 +15,6 @@ public interface ITodoRepository
 	Task UpdateAsync(TodoItem item);
 
 	Task DeleteAsync(int id);
+
+	Task<List<Category>> GetCategoriesAsync();
 }

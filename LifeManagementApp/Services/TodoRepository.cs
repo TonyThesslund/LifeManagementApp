@@ -75,4 +75,13 @@ public class TodoRepository(IDbContextFactory<AppDbContext> dbFactory) : ITodoRe
 			.Where(t => t.Id == id)
 			.ExecuteDeleteAsync();
 	}
+
+	public async Task<List<Category>> GetCategoriesAsync()
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+		return await db.Categories
+			.AsNoTracking()
+			.OrderBy(c => c.Name)
+			.ToListAsync();
+	}
 }
