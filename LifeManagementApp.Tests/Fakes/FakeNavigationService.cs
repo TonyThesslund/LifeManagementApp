@@ -9,11 +9,14 @@ public class FakeNavigationService : INavigationService
 {
 	public List<string> Routes { get; } = [];
 
+	public IDictionary<string, object>? LastParameters { get; private set; }
+
 	public int BackCount { get; private set; }
 
 	public Task GoToAsync(string route, IDictionary<string, object>? parameters = null)
 	{
 		Routes.Add(route);
+		LastParameters = parameters;
 		return Task.CompletedTask;
 	}
 

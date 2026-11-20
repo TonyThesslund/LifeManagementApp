@@ -1,12 +1,107 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
              x:Class="LifeManagementApp.Views.HomePage"
+             x:DataType="vm:HomeViewModel"
              Title="Home">
 
-    <VerticalStackLayout Padding="30" Spacing="25">
-        <Label Text="Home"
-               Style="{StaticResource Headline}" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Padding="16"
+                             Spacing="12">
+
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 8"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    IsVisible="{Binding IsKitesurfWeather}">
+                <Label Text="🪁 Kitesurf weather!"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
+            </Border>
+
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 8"
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding LocationName, StringFormat='Weather in {0}'}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="Refresh"
+                                Command="{Binding LoadWeatherCommand}" />
+                    </Grid>
+
+                    <ActivityIndicator IsRunning="{Binding IsLoadingWeather}"
+                                       IsVisible="{Binding IsLoadingWeather}"
+                                       HorizontalOptions="Start" />
+
+                    <Grid ColumnDefinitions="*,*"
+                          IsVisible="{Binding HasWeather}">
+                        <VerticalStackLayout>
+                            <Label Text="Temperature"
+                                   TextColor="{StaticResource Gray500}" />
+                            <Label Text="{Binding Weather.Temperature, StringFormat='{0:0.0} °C'}"
+                                   FontSize="28" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Wind"
+                                   TextColor="{StaticResource Gray500}" />
+                            <Label Text="{Binding Weather.WindSpeed, StringFormat='{0:0.0} m/s'}"
+                                   FontSize="28" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Label Text="{Binding WeatherError}"
+                           IsVisible="{Binding HasWeatherError}"
+                           TextColor="Red" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="Top to-dos"
+                   FontSize="20"
+                   FontAttributes="Bold" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}"
+                                 Spacing="8">
+                <BindableLayout.EmptyView>
+                    <Label Text="Nothing to do. Enjoy your day!"
+                           TextColor="{StaticResource Gray500}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:TodoItem">
+                        <Border Padding="12"
+                                StrokeShape="RoundRectangle 8"
+                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenTodoCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="4">
+                                <Label Text="{Binding Title}"
+                                       FontSize="16"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Priority, StringFormat='Priority {0}'}" />
+                                <Label Grid.Row="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding DueDate, StringFormat='Due {0:d}'}"
+                                       TextColor="{StaticResource Gray500}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>

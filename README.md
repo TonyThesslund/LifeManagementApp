@@ -64,12 +64,13 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 5 | To-do list page | `CollectionView`, sort by priority / due date |
 | 6 | Add / edit page | `TodoDetailPage` with title validation, edit via id parameter |
 | 7 | Test project | xUnit project, app gets a plain `net9.0` target, tests for the repository and `TodoDetailViewModel` |
-| 8 | Weather service | Open-Meteo client, JSON → `WeatherInfo`, m/s unit, error handling, loading state, tests for JSON mapping and wind limit |
-| 9 | Home page | Top 3 to-dos, weather, kitesurf alert |
-| 10 | Bindings + converters | `x:DataType` everywhere, at least one converter |
-| 11 | Bonus features | Mark done / edit / delete with `SwipeView`, categories and filtering |
-| 12 | Remaining tests | Fill any gaps in test coverage |
-| 13 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 8 | Weather service | Open-Meteo client, JSON → `WeatherInfo`, m/s unit, error handling, kitesurf rule, tests for JSON mapping, errors and wind limit |
+| 9 | Home page | Top 3 to-dos, weather, kitesurf alert, loading state |
+| 10 | Device location | `ILocationService` with Geolocation and Vaasa as fallback; Home uses it |
+| 11 | Bindings + converters | `x:DataType` everywhere, at least one converter |
+| 12 | Bonus features | Mark done / edit / delete with `SwipeView`, categories and filtering, settings page (location and wind limit) |
+| 13 | Remaining tests | Fill any gaps in test coverage |
+| 14 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 
