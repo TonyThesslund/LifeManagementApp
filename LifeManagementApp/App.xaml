@@ -12,6 +12,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <converters:TodoSortOrderToTextConverter x:Key="SortOrderToText" />
+            <converters:PriorityToColorConverter x:Key="PriorityToColor" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

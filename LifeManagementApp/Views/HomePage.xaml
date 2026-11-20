@@ -89,8 +89,15 @@
                                 <Label Text="{Binding Title}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding Priority, StringFormat='Priority {0}'}" />
+                                <Border Grid.Column="1"
+                                        Padding="8,2"
+                                        StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Center"
+                                        BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColor}}">
+                                    <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
+                                           TextColor="{StaticResource OffBlack}" />
+                                </Border>
                                 <Label Grid.Row="1"
                                        Grid.ColumnSpan="2"
                                        Text="{Binding DueDate, StringFormat='Due {0:d}'}"
