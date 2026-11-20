@@ -6,6 +6,33 @@ namespace LifeManagementApp.Services;
 
 public class TodoRepository(IDbContextFactory<AppDbContext> dbFactory) : ITodoRepository
 {
+	public async Task<List<TodoItem>> GetAllAsync(TodoSortOrder sortOrder, int? categoryId = null)
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+
+		var query = db.Todos
+			.AsNoTracking()
+			.Include(t => t.Category)
+			.AsQueryable();
+
+		if (categoryId is not null)
+		{
+			query = query.Where(t => t.CategoryId == categoryId);
+		}
+
+		query = sortOrder switch
+		{
+			TodoSortOrder.DueDate => query
+				.OrderBy(t => t.DueDate)
+				.ThenByDescending(t => t.Priority),
+			_ => query
+				.OrderByDescending(t => t.Priority)
+				.ThenBy(t => t.DueDate)
+		};
+
+		return await query.ToListAsync();
+	}
+
 	public async Task<TodoItem?> GetByIdAsync(int id)
 	{
 		await using var db = await dbFactory.CreateDbContextAsync();
