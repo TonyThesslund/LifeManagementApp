@@ -33,6 +33,8 @@ public static class MauiProgram
 		builder.Services.AddSingleton(Connectivity.Current);
 		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>(client =>
 			client.Timeout = OpenMeteoWeatherService.Timeout);
+		builder.Services.AddHttpClient<IGeocodingService, OpenMeteoGeocodingService>(client =>
+			client.Timeout = OpenMeteoGeocodingService.Timeout);
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();

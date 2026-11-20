@@ -25,7 +25,7 @@ public class PreferencesSettingsServiceTests
 	[Fact]
 	public void Location_IsSavedAndReadBack()
 	{
-		var helsinki = new WeatherLocation("Helsinki", 60.17, 24.94);
+		var helsinki = new WeatherLocation("Helsinki", 60.17, 24.94, "Uusimaa, Finland");
 
 		_settings.Location = helsinki;
 
@@ -35,11 +35,19 @@ public class PreferencesSettingsServiceTests
 	[Fact]
 	public void Location_IsReadBack_ByANewInstance()
 	{
-		_settings.Location = new WeatherLocation("Helsinki", 60.17, 24.94);
+		_settings.Location = new WeatherLocation("Helsinki", 60.17, 24.94, "Uusimaa, Finland");
 
 		var reopened = new PreferencesSettingsService(_preferences);
 
-		Assert.Equal(new WeatherLocation("Helsinki", 60.17, 24.94), reopened.Location);
+		Assert.Equal(new WeatherLocation("Helsinki", 60.17, 24.94, "Uusimaa, Finland"), reopened.Location);
+	}
+
+	[Fact]
+	public void Location_WithoutDetails_IsReadBackWithoutDetails()
+	{
+		_settings.Location = new WeatherLocation("Somewhere", 1.5, 2.5);
+
+		Assert.Equal(new WeatherLocation("Somewhere", 1.5, 2.5), _settings.Location);
 	}
 
 	[Fact]

@@ -12,6 +12,7 @@ public class PreferencesSettingsService(IPreferences preferences) : ISettingsSer
 	private const string LocationNameKey = "location_name";
 	private const string LatitudeKey = "location_latitude";
 	private const string LongitudeKey = "location_longitude";
+	private const string DetailsKey = "location_details";
 	private const string WindLimitKey = "wind_limit";
 	private const string ThemeKey = "theme";
 
@@ -27,13 +28,15 @@ public class PreferencesSettingsService(IPreferences preferences) : ISettingsSer
 			return new WeatherLocation(
 				preferences.Get(LocationNameKey, WeatherLocation.Vaasa.Name),
 				preferences.Get(LatitudeKey, WeatherLocation.Vaasa.Latitude),
-				preferences.Get(LongitudeKey, WeatherLocation.Vaasa.Longitude));
+				preferences.Get(LongitudeKey, WeatherLocation.Vaasa.Longitude),
+				preferences.Get<string?>(DetailsKey, null));
 		}
 		set
 		{
 			preferences.Set(LocationNameKey, value.Name);
 			preferences.Set(LatitudeKey, value.Latitude);
 			preferences.Set(LongitudeKey, value.Longitude);
+			preferences.Set(DetailsKey, value.Details);
 		}
 	}
 
