@@ -66,11 +66,16 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 7 | Test project | xUnit project, app gets a plain `net9.0` target, tests for the repository and `TodoDetailViewModel` |
 | 8 | Weather service | Open-Meteo client, JSON → `WeatherInfo`, m/s unit, error handling, kitesurf rule, tests for JSON mapping, errors and wind limit |
 | 9 | Home page | Top 3 to-dos, weather, kitesurf alert, loading state |
-| 10 | Device location | `ILocationService` with Geolocation and Vaasa as fallback; Home uses it |
-| 11 | Bindings + converters | `x:DataType` everywhere, at least one converter |
-| 12 | Bonus features | Mark done / edit / delete with `SwipeView`, categories and filtering, settings page (location and wind limit) |
-| 13 | Remaining tests | Fill any gaps in test coverage |
-| 14 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 10 | Bindings + converters | `x:DataType` everywhere, converters (e.g. readable sort order, priority color) |
+| 11 | Done, edit, delete *(bonus)* | Mark a to-do done, edit and delete it with `SwipeView` |
+| 12 | Categories and filtering *(bonus)* | Category picker on the add/edit page, category filter on the to-do list |
+| 13 | Device location *(bonus)* | `ILocationService` with Geolocation and Vaasa as fallback; Home uses it |
+| 14 | Settings page *(bonus)* | Settings tab: location (device or chosen city) and kitesurf wind limit, saved with `Preferences` |
+| 15 | Dark theme *(bonus)* | Light / dark / system theme choice on the settings page, colors that work in both |
+| 16 | Hourly forecast *(bonus)* | Hourly wind forecast for today and the "best kite window today" on Home |
+| 17 | Offline weather *(bonus)* | Cache the latest weather and show it, marked as cached, when offline |
+| 18 | Remaining tests | Fill any gaps in test coverage |
+| 19 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 
