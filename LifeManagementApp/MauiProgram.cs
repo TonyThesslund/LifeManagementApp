@@ -25,6 +25,7 @@ public static class MauiProgram
 			options.UseSqlite($"Data Source={dbPath}"));
 
 		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
+		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();
