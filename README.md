@@ -1,5 +1,7 @@
 # LifeManagementApp
 
+[![Build](https://github.com/TonyThesslund/LifeManagementApp/actions/workflows/build.yml/badge.svg)](https://github.com/TonyThesslund/LifeManagementApp/actions/workflows/build.yml)
+
 A .NET MAUI app that combines a to-do list with the current weather and tells you when it's kitesurfing weather.
 
 ## Goals
@@ -51,6 +53,44 @@ LifeManagementApp/
 └── README.md
 ```
 
+## Running the app
+
+The Windows app can only be built on Windows and the Mac app only on a Mac. The unit tests run on both.
+
+`global.json` pins the .NET 10 SDK: newer SDKs refuse to build .NET MAUI 9 apps for the Mac.
+
+### Windows
+
+1. Install Visual Studio 2022 or newer with the **.NET Multi-platform App UI development** workload
+2. Open `LifeManagementApp.sln` and run the `LifeManagementApp` project, or from a terminal:
+   ```
+   dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-windows10.0.19041.0
+   ```
+
+### Mac
+
+1. Install **Xcode 26.5**, the version the .NET MAUI 9 Mac tools require. The App Store has a newer one, so download it from https://developer.apple.com/download/all (free Apple ID). Unzip it into Applications, open it once to accept the license and install its components, then run:
+   ```
+   sudo xcode-select -s /Applications/Xcode.app
+   ```
+2. Install the **.NET 10 SDK** from https://dotnet.microsoft.com/download (Arm64 for Apple Silicon Macs)
+3. Install the MAUI workload:
+   ```
+   sudo dotnet workload install maui
+   ```
+4. In the repository folder, build and start the app:
+   ```
+   dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-maccatalyst
+   ```
+
+If the build says the Xcode version doesn't match, install the version it names from the same page.
+
+### Tests
+
+```
+dotnet test LifeManagementApp.Tests
+```
+
 ## Work order
 
 Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>-short-name`) and merged to `main` with a pull request that closes the issues. From step 7 on, each step also adds xUnit tests for the logic it introduces.
@@ -72,8 +112,9 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 | 13 | Settings page *(bonus)* | Settings tab: weather location (city search), kitesurf wind limit and light / dark theme, saved with `Preferences` |
 | 14 | Remaining tests | Fill any gaps in test coverage |
 | 15 | Manage categories *(bonus)* | Add and delete categories in Settings, pickers stay up to date |
-| 16 | Styling and design | Color theme, shared styles, centered layout, page designs, app icon |
-| 17 | Documentation | Final README: description, how to run, class diagram, AI use |
+| 16 | Mac support | Build and run on macOS, Windows and Mac builds on GitHub Actions |
+| 17 | Styling and design | Color theme, shared styles, centered layout, page designs, app icon |
+| 18 | Documentation | Final README: description, how to run, class diagram, AI use |
 
 ## Requirements checklist
 

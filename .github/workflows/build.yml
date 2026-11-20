@@ -1,0 +1,86 @@
+name: Build
+
+# Builds and tests on every push and pull request, so a change that breaks
+# the Windows or the Mac app shows up straight away.
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the run that is still going
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows (tests + app)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # SDK 10 builds the project; the 9 runtime runs the net9.0 tests
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui-windows
+
+      - name: Run tests
+        run: dotnet test LifeManagementApp.Tests --logger "trx;LogFileName=results.trx" --results-directory TestResults
+
+      - name: Test summary
+        if: always()
+        shell: pwsh
+        run: |
+          $trx = Get-ChildItem TestResults -Filter *.trx -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $trx) { "No test results found." >> $env:GITHUB_STEP_SUMMARY; exit 0 }
+          [xml]$xml = Get-Content $trx.FullName
+          $c = $xml.TestRun.ResultSummary.Counters
+          "## Tests" >> $env:GITHUB_STEP_SUMMARY
+          "| Total | Passed | Failed |" >> $env:GITHUB_STEP_SUMMARY
+          "|---|---|---|" >> $env:GITHUB_STEP_SUMMARY
+          "| $($c.total) | $($c.passed) | $($c.failed) |" >> $env:GITHUB_STEP_SUMMARY
+          $failed = $xml.TestRun.Results.UnitTestResult | Where-Object { $_.outcome -eq 'Failed' }
+          if ($failed) {
+            "" >> $env:GITHUB_STEP_SUMMARY
+            "### Failed" >> $env:GITHUB_STEP_SUMMARY
+            foreach ($t in $failed) { "- ``$($t.testName)``" >> $env:GITHUB_STEP_SUMMARY }
+          }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-results
+          path: TestResults
+
+      - name: Build Windows app
+        run: dotnet build LifeManagementApp/LifeManagementApp.csproj -f net9.0-windows10.0.19041.0
+
+  mac:
+    name: Mac (app)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      # .NET MAUI 9's Mac tools only accept this exact Xcode version (the runner's default is newer)
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.5'
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui-maccatalyst
+
+      - name: Build Mac app
+        run: dotnet build LifeManagementApp/LifeManagementApp.csproj -f net9.0-maccatalyst
