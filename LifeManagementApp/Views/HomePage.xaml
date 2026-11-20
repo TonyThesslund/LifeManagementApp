@@ -8,8 +8,7 @@
              Title="Home">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16"
-                             Spacing="12">
+        <VerticalStackLayout Style="{StaticResource PageColumn}">
 
             <Border Padding="16"
                     StrokeShape="RoundRectangle 8"

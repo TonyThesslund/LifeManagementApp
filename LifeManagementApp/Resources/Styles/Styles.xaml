@@ -29,6 +29,17 @@
         <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
+    <!--
+        Page content: a centered column with the same padding and spacing on every page,
+        so content doesn't stretch across wide windows (760 wide plus 24 padding each side)
+    -->
+    <Style TargetType="VerticalStackLayout" x:Key="PageColumn">
+        <Setter Property="MaximumWidthRequest" Value="808" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+        <Setter Property="Padding" Value="24,24,24,32" />
+        <Setter Property="Spacing" Value="20" />
+    </Style>
+
     <!-- Text -->
 
     <!-- Base for every label; the named label styles below build on it -->

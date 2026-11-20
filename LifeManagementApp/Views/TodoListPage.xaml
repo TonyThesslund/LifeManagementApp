@@ -13,100 +13,105 @@
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,*">
-        <HorizontalStackLayout Margin="16,8,16,0"
-                               Spacing="8">
-            <Label Text="Sort by"
-                   VerticalOptions="Center" />
-            <Picker ItemsSource="{Binding SortOrders}"
-                    SelectedItem="{Binding SortOrder}"
-                    ItemDisplayBinding="{Binding ., Converter={StaticResource SortOrderToText}, x:DataType=models:TodoSortOrder}"
-                    WidthRequest="160" />
-            <Label Text="Category"
-                   Margin="16,0,0,0"
-                   VerticalOptions="Center" />
-            <Picker ItemsSource="{Binding Filters}"
-                    SelectedItem="{Binding SelectedFilter}"
-                    ItemDisplayBinding="{Binding Name, x:DataType=models:Category}"
-                    WidthRequest="180" />
-        </HorizontalStackLayout>
+        <VerticalStackLayout Style="{StaticResource PageColumn}"
+                             Padding="24,24,24,12">
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Sort by"
+                       VerticalOptions="Center" />
+                <Picker ItemsSource="{Binding SortOrders}"
+                        SelectedItem="{Binding SortOrder}"
+                        ItemDisplayBinding="{Binding ., Converter={StaticResource SortOrderToText}, x:DataType=models:TodoSortOrder}"
+                        WidthRequest="160" />
+                <Label Text="Category"
+                       Margin="16,0,0,0"
+                       VerticalOptions="Center" />
+                <Picker ItemsSource="{Binding Filters}"
+                        SelectedItem="{Binding SelectedFilter}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=models:Category}"
+                        WidthRequest="180" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
 
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Todos}"
-                        Margin="16,8">
-            <CollectionView.EmptyView>
-                <Label Text="{Binding EmptyMessage}"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Style="{StaticResource Caption}" />
-            </CollectionView.EmptyView>
+        <!-- The padding is on a wrapper: a CollectionView with both a margin and a maximum width clips its items on Windows -->
+        <Grid Grid.Row="1"
+              Padding="24,0,24,24">
+            <CollectionView ItemsSource="{Binding Todos}"
+                            MaximumWidthRequest="760">
+                <CollectionView.EmptyView>
+                    <Label Text="{Binding EmptyMessage}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           Style="{StaticResource Caption}" />
+                </CollectionView.EmptyView>
 
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
-            </CollectionView.ItemsLayout>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                </CollectionView.ItemsLayout>
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:TodoItem">
-                    <Border Padding="12"
-                            Style="{StaticResource Card}">
-                        <Border.Triggers>
-                            <DataTrigger TargetType="Border"
-                                         Binding="{Binding IsDone}"
-                                         Value="True">
-                                <Setter Property="Opacity" Value="0.5" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                                  CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto"
-                              RowDefinitions="Auto,Auto"
-                              RowSpacing="4"
-                              ColumnSpacing="8">
-                            <Grid Grid.RowSpan="2"
-                                  VerticalOptions="Center">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                                          CommandParameter="{Binding .}" />
-                                </Grid.GestureRecognizers>
-                                <!-- InputTransparent: the tap goes to the Grid's command, the CheckBox only shows the state -->
-                                <CheckBox IsChecked="{Binding IsDone, Mode=OneWay}"
-                                          InputTransparent="True" />
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TodoItem">
+                        <Border Padding="12"
+                                Style="{StaticResource Card}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border"
+                                             Binding="{Binding IsDone}"
+                                             Value="True">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="4"
+                                  ColumnSpacing="8">
+                                <Grid Grid.RowSpan="2"
+                                      VerticalOptions="Center">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                                              CommandParameter="{Binding .}" />
+                                    </Grid.GestureRecognizers>
+                                    <!-- InputTransparent: the tap goes to the Grid's command, the CheckBox only shows the state -->
+                                    <CheckBox IsChecked="{Binding IsDone, Mode=OneWay}"
+                                              InputTransparent="True" />
+                                </Grid>
+                                <Label Grid.Column="1"
+                                       Text="{Binding Title}"
+                                       TextDecorations="{Binding IsDone, Converter={StaticResource BoolToStrikethrough}}"
+                                       FontSize="16"
+                                       FontAttributes="Bold" />
+                                <Border Grid.Column="2"
+                                        Padding="8,2"
+                                        StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Center"
+                                        BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColor}}">
+                                    <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
+                                           TextColor="{StaticResource OnPriority}" />
+                                </Border>
+                                <Label Grid.Row="1"
+                                       Grid.Column="1"
+                                       Text="{Binding Category.Name, TargetNullValue='No category', FallbackValue='No category'}"
+                                       Style="{StaticResource Caption}" />
+                                <Label Grid.Row="1"
+                                       Grid.Column="2"
+                                       Text="{Binding DueDate, StringFormat='{0:d}'}"
+                                       Style="{StaticResource Caption}" />
+                                <Button Grid.Column="3"
+                                        Grid.RowSpan="2"
+                                        Text="Delete"
+                                        VerticalOptions="Center"
+                                        Style="{StaticResource DangerButton}"
+                                        Command="{Binding DeleteTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                        CommandParameter="{Binding .}" />
                             </Grid>
-                            <Label Grid.Column="1"
-                                   Text="{Binding Title}"
-                                   TextDecorations="{Binding IsDone, Converter={StaticResource BoolToStrikethrough}}"
-                                   FontSize="16"
-                                   FontAttributes="Bold" />
-                            <Border Grid.Column="2"
-                                    Padding="8,2"
-                                    StrokeShape="RoundRectangle 10"
-                                    StrokeThickness="0"
-                                    VerticalOptions="Center"
-                                    BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColor}}">
-                                <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
-                                       TextColor="{StaticResource OnPriority}" />
-                            </Border>
-                            <Label Grid.Row="1"
-                                   Grid.Column="1"
-                                   Text="{Binding Category.Name, TargetNullValue='No category', FallbackValue='No category'}"
-                                   Style="{StaticResource Caption}" />
-                            <Label Grid.Row="1"
-                                   Grid.Column="2"
-                                   Text="{Binding DueDate, StringFormat='{0:d}'}"
-                                   Style="{StaticResource Caption}" />
-                            <Button Grid.Column="3"
-                                    Grid.RowSpan="2"
-                                    Text="Delete"
-                                    VerticalOptions="Center"
-                                    Style="{StaticResource DangerButton}"
-                                    Command="{Binding DeleteTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                    CommandParameter="{Binding .}" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
 
         <ActivityIndicator Grid.Row="1"
                            IsRunning="{Binding IsBusy}"

@@ -8,10 +8,7 @@
              Title="Settings">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16"
-                             Spacing="24"
-                             MaximumWidthRequest="700"
-                             HorizontalOptions="Start">
+        <VerticalStackLayout Style="{StaticResource PageColumn}">
 
             <!-- Weather location -->
             <VerticalStackLayout Spacing="8">
