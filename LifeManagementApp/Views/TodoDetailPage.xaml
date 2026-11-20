@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
              x:Class="LifeManagementApp.Views.TodoDetailPage"
              x:DataType="vm:TodoDetailViewModel"
              Title="{Binding PageTitle}">
@@ -32,6 +33,13 @@
                 <Label Text="Priority (5 = highest)" />
                 <Picker ItemsSource="{Binding Priorities}"
                         SelectedItem="{Binding Priority}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Category" />
+                <Picker ItemsSource="{Binding Categories}"
+                        SelectedItem="{Binding SelectedCategory}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=models:Category}" />
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="4">

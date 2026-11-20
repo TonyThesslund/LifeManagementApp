@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LifeManagementApp.Models;
@@ -14,6 +15,7 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 	private readonly IDialogService _dialogs;
 
 	private TodoItem? _existing;
+	private Task? _categoriesLoading;
 
 	public TodoDetailViewModel(ITodoRepository repository, INavigationService navigation, IDialogService dialogs)
 	{
@@ -23,6 +25,15 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 	}
 
 	public IReadOnlyList<int> Priorities { get; } = [1, 2, 3, 4, 5];
+
+	/// <summary>Picker option for "no category". Not stored in the database (Id 0).</summary>
+	public static Category NoCategory { get; } = new() { Id = 0, Name = "No category" };
+
+	/// <summary>"No category" first, then the categories from the database.</summary>
+	public ObservableCollection<Category> Categories { get; } = [NoCategory];
+
+	[ObservableProperty]
+	public partial Category SelectedCategory { get; set; } = NoCategory;
 
 	[ObservableProperty]
 	public partial string PageTitle { get; set; } = "New to-do";
@@ -48,6 +59,8 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 
 	private bool CanSave => IsTitleValid(Title);
 
+	private int? SelectedCategoryId => SelectedCategory.Id == NoCategory.Id ? null : SelectedCategory.Id;
+
 	public static bool IsTitleValid(string? title)
 	{
 		return !string.IsNullOrWhiteSpace(title);
@@ -68,6 +81,21 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 	}
 
 	[RelayCommand]
+	private Task LoadCategoriesAsync()
+	{
+		// Loaded once, even if both the page and LoadAsync ask for them
+		return _categoriesLoading ??= FetchCategoriesAsync();
+	}
+
+	private async Task FetchCategoriesAsync()
+	{
+		foreach (var category in await _repository.GetCategoriesAsync())
+		{
+			Categories.Add(category);
+		}
+	}
+
+	[RelayCommand]
 	private async Task LoadAsync(int id)
 	{
 		var item = await _repository.GetByIdAsync(id);
@@ -84,6 +112,9 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 		Notes = item.Notes;
 		Priority = item.Priority;
 		DueDate = item.DueDate;
+
+		await LoadCategoriesAsync();
+		SelectedCategory = Categories.FirstOrDefault(c => c.Id == item.CategoryId) ?? NoCategory;
 	}
 
 	[RelayCommand(CanExecute = nameof(CanSave))]
@@ -101,7 +132,8 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 				Title = Title.Trim(),
 				Notes = Notes,
 				Priority = Priority,
-				DueDate = DueDate
+				DueDate = DueDate,
+				CategoryId = SelectedCategoryId
 			});
 		}
 		else
@@ -110,6 +142,7 @@ public partial class TodoDetailViewModel : ObservableObject, IQueryAttributable
 			_existing.Notes = Notes;
 			_existing.Priority = Priority;
 			_existing.DueDate = DueDate;
+			_existing.CategoryId = SelectedCategoryId;
 			await _repository.UpdateAsync(_existing);
 		}
 

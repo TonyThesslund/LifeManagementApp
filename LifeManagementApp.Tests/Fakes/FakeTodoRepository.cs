@@ -16,6 +16,20 @@ public class FakeTodoRepository : ITodoRepository
 
 	public List<TodoItem> Updated { get; } = [];
 
+	/// <summary>Same categories as the database seed.</summary>
+	public List<Category> Categories { get; } =
+	[
+		new() { Id = 1, Name = "Personal" },
+		new() { Id = 2, Name = "Work" },
+		new() { Id = 3, Name = "Shopping" }
+	];
+
+	public int CategoriesCallCount { get; private set; }
+
+	public TodoSortOrder? LastSortOrder { get; private set; }
+
+	public int? LastCategoryId { get; private set; }
+
 	public TodoItem Seed(TodoItem item)
 	{
 		item.Id = _nextId++;
@@ -25,7 +39,12 @@ public class FakeTodoRepository : ITodoRepository
 
 	public Task<List<TodoItem>> GetAllAsync(TodoSortOrder sortOrder, int? categoryId = null)
 	{
-		return Task.FromResult(Items.Select(Copy).ToList());
+		LastSortOrder = sortOrder;
+		LastCategoryId = categoryId;
+		return Task.FromResult(Items
+			.Where(t => categoryId is null || t.CategoryId == categoryId)
+			.Select(Copy)
+			.ToList());
 	}
 
 	public int? LastTopCount { get; private set; }
@@ -68,7 +87,8 @@ public class FakeTodoRepository : ITodoRepository
 
 	public Task<List<Category>> GetCategoriesAsync()
 	{
-		return Task.FromResult(new List<Category>());
+		CategoriesCallCount++;
+		return Task.FromResult(Categories.ToList());
 	}
 
 	// The real repository returns a new object for every read, so the fake does too.
