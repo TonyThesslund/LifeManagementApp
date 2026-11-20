@@ -66,6 +66,13 @@
         <Setter Property="FontSize" Value="13" />
     </Style>
 
+    <!-- Label above a form field, e.g. "Title" or "Due date" -->
+    <Style TargetType="Label" x:Key="FieldLabel" BasedOn="{StaticResource BaseLabel}">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+    </Style>
+
     <!-- Validation and error messages -->
     <Style TargetType="Label" x:Key="ErrorText" BasedOn="{StaticResource BaseLabel}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerLight}, Dark={StaticResource DangerDark}}" />
@@ -135,6 +142,11 @@
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="StrokeShape" Value="RoundRectangle 14" />
         <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- A card that holds one section of a page: heading, explanation and its controls -->
+    <Style TargetType="Border" x:Key="SectionCard" BasedOn="{StaticResource Card}">
+        <Setter Property="Padding" Value="24,20" />
     </Style>
 
     <!-- Buttons -->

@@ -378,4 +378,22 @@ public class SettingsViewModelTests
 		Assert.Contains("to-dos are kept", confirmation.Message);
 		Assert.Equal("Delete", confirmation.Accept);
 	}
+
+	[Fact]
+	public async Task HasSearchResults_FollowsResults()
+	{
+		_geocoding.Results = [Helsinki, Oulu];
+		var viewModel = CreateViewModel();
+		var changes = new List<string?>();
+		viewModel.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+		Assert.False(viewModel.HasSearchResults);
+
+		viewModel.SearchText = "Hel";
+		await viewModel.SearchCommand.ExecuteAsync(null);
+		Assert.True(viewModel.HasSearchResults);
+		Assert.Contains(nameof(SettingsViewModel.HasSearchResults), changes);
+
+		viewModel.SelectLocationCommand.Execute(Oulu);
+		Assert.False(viewModel.HasSearchResults);
+	}
 }
