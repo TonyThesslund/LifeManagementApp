@@ -53,21 +53,7 @@
                             <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
                                                   CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
-                        <FlyoutBase.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Edit"
-                                                Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                                CommandParameter="{Binding .}" />
-                                <MenuFlyoutItem Text="{Binding IsDone, Converter={StaticResource BoolToText}, ConverterParameter='Undo|Mark done'}"
-                                                Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                                CommandParameter="{Binding .}" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Delete"
-                                                Command="{Binding DeleteTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
-                                                CommandParameter="{Binding .}" />
-                            </MenuFlyout>
-                        </FlyoutBase.ContextFlyout>
-                        <Grid ColumnDefinitions="Auto,*,Auto"
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto"
                               RowDefinitions="Auto,Auto"
                               RowSpacing="4"
                               ColumnSpacing="8">
@@ -103,6 +89,14 @@
                                    Grid.Column="2"
                                    Text="{Binding DueDate, StringFormat='{0:d}'}"
                                    TextColor="{StaticResource Gray500}" />
+                            <Button Grid.Column="3"
+                                    Grid.RowSpan="2"
+                                    Text="Delete"
+                                    VerticalOptions="Center"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource DeleteRed}"
+                                    Command="{Binding DeleteTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                    CommandParameter="{Binding .}" />
                         </Grid>
                     </Border>
                 </DataTemplate>

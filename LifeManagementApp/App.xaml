@@ -14,7 +14,6 @@
             <converters:TodoSortOrderToTextConverter x:Key="SortOrderToText" />
             <converters:PriorityToColorConverter x:Key="PriorityToColor" />
             <converters:BoolToStrikethroughConverter x:Key="BoolToStrikethrough" />
-            <converters:BoolToTextConverter x:Key="BoolToText" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
