@@ -42,6 +42,13 @@
                     <Border Padding="12"
                             StrokeShape="RoundRectangle 8"
                             Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding IsDone}"
+                                         Value="True">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </DataTrigger>
+                        </Border.Triggers>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding EditTodoCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
                                                   CommandParameter="{Binding .}" />
@@ -50,6 +57,7 @@
                               RowDefinitions="Auto,Auto"
                               RowSpacing="4">
                             <Label Text="{Binding Title}"
+                                   TextDecorations="{Binding IsDone, Converter={StaticResource BoolToStrikethrough}}"
                                    FontSize="16"
                                    FontAttributes="Bold" />
                             <Border Grid.Column="1"
