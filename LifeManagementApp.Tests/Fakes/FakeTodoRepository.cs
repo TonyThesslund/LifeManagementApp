@@ -37,14 +37,26 @@ public class FakeTodoRepository : ITodoRepository
 		return item;
 	}
 
-	public Task<List<TodoItem>> GetAllAsync(TodoSortOrder sortOrder, int? categoryId = null)
+	/// <summary>Set to hold GetAllAsync open until the test completes it, to check what the UI shows while loading.</summary>
+	public TaskCompletionSource? Gate { get; set; }
+
+	public int GetAllCallCount { get; private set; }
+
+	public async Task<List<TodoItem>> GetAllAsync(TodoSortOrder sortOrder, int? categoryId = null)
 	{
+		GetAllCallCount++;
 		LastSortOrder = sortOrder;
 		LastCategoryId = categoryId;
-		return Task.FromResult(Items
+
+		if (Gate is not null)
+		{
+			await Gate.Task;
+		}
+
+		return Items
 			.Where(t => categoryId is null || t.CategoryId == categoryId)
 			.Select(Copy)
-			.ToList());
+			.ToList();
 	}
 
 	public int? LastTopCount { get; private set; }
