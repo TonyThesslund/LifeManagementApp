@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: TestResults
@@ -80,7 +80,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Install MAUI workload
-        run: sudo dotnet workload install maui-maccatalyst
+        run: dotnet workload install maui-maccatalyst
 
       - name: Build Mac app
         run: dotnet build LifeManagementApp/LifeManagementApp.csproj -f net9.0-maccatalyst
