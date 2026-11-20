@@ -11,8 +11,12 @@ public class HomeViewModelTests
 	private readonly FakeTodoRepository _repository = new();
 	private readonly FakeNavigationService _navigation = new();
 	private readonly FakeWeatherService _weather = new();
+	private readonly FakeSettingsService _settings = new();
 
-	private HomeViewModel CreateViewModel() => new(_repository, _navigation, _weather, new KitesurfAdvisor());
+	private static readonly WeatherLocation Oulu = new("Oulu", 65.01, 25.47, "North Ostrobothnia, Finland");
+
+	private HomeViewModel CreateViewModel() =>
+		new(_repository, _navigation, _weather, new KitesurfAdvisor(_settings), _settings);
 
 	[Fact]
 	public async Task LoadTodos_AsksRepositoryForTopThree()
@@ -229,5 +233,100 @@ public class HomeViewModelTests
 	public void NewViewModel_HasNoKitesurfAlert()
 	{
 		Assert.False(CreateViewModel().IsKitesurfWeather);
+	}
+
+	[Fact]
+	public async Task LoadWeather_UsesSavedLocation()
+	{
+		_settings.Location = Oulu;
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.Equal((65.01, 25.47), _weather.LastCoordinates);
+		Assert.Equal("Oulu", viewModel.LocationName);
+	}
+
+	[Fact]
+	public async Task LoadAsync_LocationChangedInSettings_FetchesWeatherAgain()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadAsync();
+
+		_settings.Location = Oulu;
+		await viewModel.LoadAsync();
+
+		Assert.Equal(2, _weather.CallCount);
+		Assert.Equal((65.01, 25.47), _weather.LastCoordinates);
+		Assert.Equal("Oulu", viewModel.LocationName);
+	}
+
+	[Fact]
+	public async Task LoadAsync_LocationChanged_HidesOldWeatherWhileLoading()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadAsync();
+
+		_settings.Location = Oulu;
+		_weather.Gate = new TaskCompletionSource();
+		var loading = viewModel.LoadAsync();
+
+		Assert.False(viewModel.HasWeather);
+		Assert.Equal("Oulu", viewModel.LocationName);
+		_weather.Gate.SetResult();
+		await loading;
+		Assert.True(viewModel.HasWeather);
+	}
+
+	[Fact]
+	public async Task LoadAsync_SameLocation_DoesNotFetchAgain()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadAsync();
+
+		_settings.Location = WeatherLocation.Vaasa;
+		await viewModel.LoadAsync();
+
+		Assert.Equal(1, _weather.CallCount);
+	}
+
+	[Fact]
+	public async Task Kitesurf_UsesSavedWindLimit()
+	{
+		_settings.WindLimit = 8.0;
+		_weather.Result = new WeatherInfo { WindSpeed = 7.0 };
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.False(viewModel.IsKitesurfWeather);
+	}
+
+	[Fact]
+	public async Task LoadAsync_WindLimitChanged_RechecksWithoutFetching()
+	{
+		_weather.Result = new WeatherInfo { WindSpeed = 7.0 };
+		var viewModel = CreateViewModel();
+		await viewModel.LoadAsync();
+		Assert.True(viewModel.IsKitesurfWeather);
+
+		_settings.WindLimit = 8.0;
+		await viewModel.LoadAsync();
+
+		Assert.False(viewModel.IsKitesurfWeather);
+		Assert.Null(viewModel.KitesurfReason);
+		Assert.Equal(1, _weather.CallCount);
+	}
+
+	[Fact]
+	public async Task KitesurfReason_NamesWindAndLimit()
+	{
+		_settings.WindLimit = 7.0;
+		_weather.Result = new WeatherInfo { WindSpeed = 9.0 };
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.Equal($"Wind {9.0:0.0} m/s is above your 7 m/s limit", viewModel.KitesurfReason);
 	}
 }

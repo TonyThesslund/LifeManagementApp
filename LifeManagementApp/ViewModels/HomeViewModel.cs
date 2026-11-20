@@ -15,23 +15,30 @@ public partial class HomeViewModel : ObservableObject
 	private readonly INavigationService _navigation;
 	private readonly IWeatherService _weatherService;
 	private readonly IKitesurfAdvisor _kitesurfAdvisor;
+	private readonly ISettingsService _settings;
+
+	// The location the shown weather is for, to notice when the user picks another one in Settings
+	private WeatherLocation? _loadedLocation;
 
 	public HomeViewModel(
 		ITodoRepository repository,
 		INavigationService navigation,
 		IWeatherService weatherService,
-		IKitesurfAdvisor kitesurfAdvisor)
+		IKitesurfAdvisor kitesurfAdvisor,
+		ISettingsService settings)
 	{
 		_repository = repository;
 		_navigation = navigation;
 		_weatherService = weatherService;
 		_kitesurfAdvisor = kitesurfAdvisor;
+		_settings = settings;
+		LocationName = settings.Location.Name;
 	}
 
 	public ObservableCollection<TodoItem> TopTodos { get; } = [];
 
 	[ObservableProperty]
-	public partial string LocationName { get; set; } = WeatherLocation.Vaasa.Name;
+	public partial string LocationName { get; set; }
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(HasWeather))]
@@ -39,6 +46,10 @@ public partial class HomeViewModel : ObservableObject
 
 	[ObservableProperty]
 	public partial bool IsKitesurfWeather { get; set; }
+
+	/// <summary>Why it's kitesurf weather, e.g. "Wind 8.2 m/s is above your 7 m/s limit".</summary>
+	[ObservableProperty]
+	public partial string? KitesurfReason { get; set; }
 
 	[ObservableProperty]
 	public partial bool IsLoadingWeather { get; set; }
@@ -53,17 +64,33 @@ public partial class HomeViewModel : ObservableObject
 
 	partial void OnWeatherChanged(WeatherInfo? value)
 	{
-		IsKitesurfWeather = value is not null && _kitesurfAdvisor.IsKitesurfWeather(value);
+		UpdateKitesurf();
+	}
+
+	private void UpdateKitesurf()
+	{
+		IsKitesurfWeather = Weather is not null && _kitesurfAdvisor.IsKitesurfWeather(Weather);
+		KitesurfReason = IsKitesurfWeather
+			? $"Wind {Weather!.WindSpeed:0.0} m/s is above your {_kitesurfAdvisor.WindLimit:0.#} m/s limit"
+			: null;
 	}
 
 	/// <summary>
-	/// Called when the page appears. To-dos are always reloaded; the weather only if it hasn't been loaded yet.
-	/// Both run at the same time, so a slow weather call doesn't hold up the to-do list.
+	/// Called when the page appears. To-dos are always reloaded; the weather only if it hasn't been loaded yet
+	/// or the location has changed in Settings. Both run at the same time, so a slow weather call doesn't hold
+	/// up the to-do list. The kitesurf notice is re-checked in case the wind limit has changed.
 	/// </summary>
 	public Task LoadAsync()
 	{
 		var todos = LoadTodosCommand.ExecuteAsync(null);
-		var weather = HasWeather ? Task.CompletedTask : LoadWeatherCommand.ExecuteAsync(null);
+
+		var needsWeather = !HasWeather || _settings.Location != _loadedLocation;
+		if (!needsWeather)
+		{
+			UpdateKitesurf();
+		}
+
+		var weather = needsWeather ? LoadWeatherCommand.ExecuteAsync(null) : Task.CompletedTask;
 		return Task.WhenAll(todos, weather);
 	}
 
@@ -91,9 +118,16 @@ public partial class HomeViewModel : ObservableObject
 		WeatherError = null;
 		try
 		{
-			var location = WeatherLocation.Vaasa;
-			Weather = await _weatherService.GetCurrentWeatherAsync(location.Latitude, location.Longitude);
+			var location = _settings.Location;
+			if (location != _loadedLocation)
+			{
+				// Don't show the old city's weather under the new city's name while loading
+				Weather = null;
+			}
+
 			LocationName = location.Name;
+			_loadedLocation = location;
+			Weather = await _weatherService.GetCurrentWeatherAsync(location.Latitude, location.Longitude);
 		}
 		catch (WeatherUnavailableException ex)
 		{
