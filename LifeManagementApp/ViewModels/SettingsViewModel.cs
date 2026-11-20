@@ -13,13 +13,20 @@ public partial class SettingsViewModel : ObservableObject
 
 	private readonly ISettingsService _settings;
 	private readonly IGeocodingService _geocoding;
+	private readonly IThemeService _themeService;
 
-	public SettingsViewModel(ISettingsService settings, IGeocodingService geocoding)
+	public SettingsViewModel(ISettingsService settings, IGeocodingService geocoding, IThemeService themeService)
 	{
 		_settings = settings;
 		_geocoding = geocoding;
+		_themeService = themeService;
 		Load();
 	}
+
+	public IReadOnlyList<ThemeSetting> Themes { get; } = Enum.GetValues<ThemeSetting>();
+
+	[ObservableProperty]
+	public partial ThemeSetting SelectedTheme { get; set; }
 
 	public ObservableCollection<WeatherLocation> SearchResults { get; } = [];
 
@@ -53,6 +60,18 @@ public partial class SettingsViewModel : ObservableObject
 	{
 		CurrentLocation = _settings.Location;
 		WindLimitText = _settings.WindLimit.ToString(CultureInfo.CurrentCulture);
+		SelectedTheme = _settings.Theme;
+	}
+
+	partial void OnSelectedThemeChanged(ThemeSetting value)
+	{
+		if (value == _settings.Theme)
+		{
+			return;
+		}
+
+		_settings.Theme = value;
+		_themeService.Apply(value);
 	}
 
 	/// <summary>

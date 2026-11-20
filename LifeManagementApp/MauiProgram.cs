@@ -29,6 +29,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IDialogService, ShellDialogService>();
 		builder.Services.AddSingleton(Preferences.Default);
 		builder.Services.AddSingleton<ISettingsService, PreferencesSettingsService>();
+		builder.Services.AddSingleton<IThemeService, ThemeService>();
 		builder.Services.AddSingleton<IKitesurfAdvisor, KitesurfAdvisor>();
 		builder.Services.AddSingleton(Connectivity.Current);
 		builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>(client =>

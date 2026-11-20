@@ -91,6 +91,19 @@
                        TextColor="Red" />
             </VerticalStackLayout>
 
+            <!-- Theme -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Theme"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+                <Label Text="System follows the Windows setting."
+                       TextColor="{StaticResource Gray500}" />
+                <Picker ItemsSource="{Binding Themes}"
+                        SelectedItem="{Binding SelectedTheme}"
+                        HorizontalOptions="Start"
+                        WidthRequest="160" />
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 

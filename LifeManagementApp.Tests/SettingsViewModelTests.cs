@@ -12,8 +12,9 @@ public class SettingsViewModelTests
 
 	private readonly FakeSettingsService _settings = new();
 	private readonly FakeGeocodingService _geocoding = new();
+	private readonly FakeThemeService _themes = new();
 
-	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding);
+	private SettingsViewModel CreateViewModel() => new(_settings, _geocoding, _themes);
 
 	[Fact]
 	public void Opens_WithSavedSettings()
@@ -184,5 +185,47 @@ public class SettingsViewModelTests
 		viewModel.Load();
 
 		Assert.Equal(Oulu, viewModel.CurrentLocation);
+	}
+
+	[Fact]
+	public void Opens_WithSavedTheme_WithoutApplyingAgain()
+	{
+		_settings.Theme = ThemeSetting.Dark;
+
+		var viewModel = CreateViewModel();
+
+		Assert.Equal(ThemeSetting.Dark, viewModel.SelectedTheme);
+		Assert.Empty(_themes.Applied);
+	}
+
+	[Theory]
+	[InlineData(ThemeSetting.Light)]
+	[InlineData(ThemeSetting.Dark)]
+	public void ChoosingTheme_SavesAndAppliesIt(ThemeSetting theme)
+	{
+		var viewModel = CreateViewModel();
+
+		viewModel.SelectedTheme = theme;
+
+		Assert.Equal(theme, _settings.Theme);
+		Assert.Equal([theme], _themes.Applied);
+	}
+
+	[Fact]
+	public void ChoosingSystemAgain_SavesAndAppliesIt()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.SelectedTheme = ThemeSetting.Dark;
+
+		viewModel.SelectedTheme = ThemeSetting.System;
+
+		Assert.Equal(ThemeSetting.System, _settings.Theme);
+		Assert.Equal([ThemeSetting.Dark, ThemeSetting.System], _themes.Applied);
+	}
+
+	[Fact]
+	public void Themes_OfferSystemLightDark()
+	{
+		Assert.Equal([ThemeSetting.System, ThemeSetting.Light, ThemeSetting.Dark], CreateViewModel().Themes);
 	}
 }
