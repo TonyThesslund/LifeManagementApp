@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using LifeManagementApp.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LifeManagementApp;
 
@@ -15,10 +17,25 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
+		var dbPath = Path.Combine(FileSystem.AppDataDirectory, "lifemanagement.db");
+		builder.Services.AddDbContextFactory<AppDbContext>(options =>
+			options.UseSqlite($"Data Source={dbPath}"));
+
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
 
-		return builder.Build();
+		var app = builder.Build();
+
+		CreateDatabase(app.Services);
+
+		return app;
+	}
+
+	private static void CreateDatabase(IServiceProvider services)
+	{
+		var factory = services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+		using var db = factory.CreateDbContext();
+		db.Database.EnsureCreated();
 	}
 }
