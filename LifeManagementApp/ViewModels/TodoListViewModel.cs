@@ -49,6 +49,14 @@ public partial class TodoListViewModel : ObservableObject
 	}
 
 	[RelayCommand]
+	private async Task ToggleDoneAsync(TodoItem item)
+	{
+		item.IsDone = !item.IsDone;
+		await _repository.UpdateAsync(item);
+		await LoadTodosAsync();
+	}
+
+	[RelayCommand]
 	private async Task LoadTodosAsync()
 	{
 		if (IsBusy)
