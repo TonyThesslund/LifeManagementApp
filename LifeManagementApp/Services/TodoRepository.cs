@@ -33,6 +33,19 @@ public class TodoRepository(IDbContextFactory<AppDbContext> dbFactory) : ITodoRe
 		return await query.ToListAsync();
 	}
 
+	public async Task<List<TodoItem>> GetTopAsync(int count)
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+		return await db.Todos
+			.AsNoTracking()
+			.Include(t => t.Category)
+			.Where(t => !t.IsDone)
+			.OrderByDescending(t => t.Priority)
+			.ThenBy(t => t.DueDate)
+			.Take(count)
+			.ToListAsync();
+	}
+
 	public async Task<TodoItem?> GetByIdAsync(int id)
 	{
 		await using var db = await dbFactory.CreateDbContextAsync();
