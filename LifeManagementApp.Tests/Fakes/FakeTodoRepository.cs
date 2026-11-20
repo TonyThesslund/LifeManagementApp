@@ -57,8 +57,11 @@ public class FakeTodoRepository : ITodoRepository
 		return Task.CompletedTask;
 	}
 
+	public List<int> Deleted { get; } = [];
+
 	public Task DeleteAsync(int id)
 	{
+		Deleted.Add(id);
 		Items.RemoveAll(t => t.Id == id);
 		return Task.CompletedTask;
 	}
