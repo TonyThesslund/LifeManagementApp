@@ -69,10 +69,13 @@ The Windows app can only be built on Windows and the Mac app only on a Mac. The 
 
 ### Mac
 
-1. Install **Xcode 26.5**, the version the .NET MAUI 9 Mac tools require. The App Store has a newer one, so download it from https://developer.apple.com/download/all (free Apple ID). Unzip it into Applications, open it once to accept the license and install its components, then run:
+1. Install **Xcode 26.5**, the version the .NET MAUI 9 Mac tools require (they don't work with Xcode 27). The App Store has a newer one, so download the `.xip` from https://developer.apple.com/download/all (free Apple ID). Unpack it, rename it to `Xcode-26.5.app` so it can sit next to a newer Xcode, and move it to Applications. Then make it the active Xcode and finish its setup:
    ```
-   sudo xcode-select -s /Applications/Xcode.app
+   sudo xcode-select -s /Applications/Xcode-26.5.app
+   sudo xcodebuild -license accept
+   xcodebuild -runFirstLaunch
    ```
+   `xcode-select -p` should now print `/Applications/Xcode-26.5.app/Contents/Developer`. If it prints `/Library/Developer/CommandLineTools`, the build can't find Xcode. To go back to a newer Xcode for other projects, run `xcode-select -s` with that one.
 2. Install the **.NET 10 SDK** from https://dotnet.microsoft.com/download (Arm64 for Apple Silicon Macs)
 3. Install the MAUI workload:
    ```
