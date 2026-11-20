@@ -57,6 +57,8 @@ LifeManagementApp/
 
 The Windows app can only be built on Windows and the Mac app only on a Mac. The unit tests run on both.
 
+`global.json` pins the .NET 10 SDK: newer SDKs refuse to build .NET MAUI 9 apps for the Mac.
+
 ### Windows
 
 1. Install Visual Studio 2022 or newer with the **.NET Multi-platform App UI development** workload
