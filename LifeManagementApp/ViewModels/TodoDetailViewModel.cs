@@ -19,7 +19,14 @@ public partial class TodoDetailViewModel : ObservableObject
 	public IReadOnlyList<int> Priorities { get; } = [1, 2, 3, 4, 5];
 
 	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(SaveCommand))]
 	public partial string Title { get; set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial string? TitleError { get; set; }
+
+	[ObservableProperty]
+	public partial bool HasTitleError { get; set; }
 
 	[ObservableProperty]
 	public partial string? Notes { get; set; }
@@ -30,12 +37,30 @@ public partial class TodoDetailViewModel : ObservableObject
 	[ObservableProperty]
 	public partial DateTime DueDate { get; set; } = DateTime.Today;
 
-	[RelayCommand]
+	private bool CanSave => IsTitleValid(Title);
+
+	public static bool IsTitleValid(string? title)
+	{
+		return !string.IsNullOrWhiteSpace(title);
+	}
+
+	partial void OnTitleChanged(string value)
+	{
+		TitleError = IsTitleValid(value) ? null : "Title is required.";
+		HasTitleError = TitleError is not null;
+	}
+
+	[RelayCommand(CanExecute = nameof(CanSave))]
 	private async Task SaveAsync()
 	{
+		if (!CanSave)
+		{
+			return;
+		}
+
 		var item = new TodoItem
 		{
-			Title = Title,
+			Title = Title.Trim(),
 			Notes = Notes,
 			Priority = Priority,
 			DueDate = DueDate
