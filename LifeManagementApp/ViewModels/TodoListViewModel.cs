@@ -3,16 +3,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LifeManagementApp.Models;
 using LifeManagementApp.Services;
+using LifeManagementApp.Views;
 
 namespace LifeManagementApp.ViewModels;
 
 public partial class TodoListViewModel : ObservableObject
 {
 	private readonly ITodoRepository _repository;
+	private readonly INavigationService _navigation;
 
-	public TodoListViewModel(ITodoRepository repository)
+	public TodoListViewModel(ITodoRepository repository, INavigationService navigation)
 	{
 		_repository = repository;
+		_navigation = navigation;
 	}
 
 	public ObservableCollection<TodoItem> Todos { get; } = [];
@@ -28,6 +31,21 @@ public partial class TodoListViewModel : ObservableObject
 	partial void OnSortOrderChanged(TodoSortOrder value)
 	{
 		LoadTodosCommand.Execute(null);
+	}
+
+	[RelayCommand]
+	private Task AddTodoAsync()
+	{
+		return _navigation.GoToAsync(nameof(TodoDetailPage));
+	}
+
+	[RelayCommand]
+	private Task EditTodoAsync(TodoItem item)
+	{
+		return _navigation.GoToAsync(nameof(TodoDetailPage), new Dictionary<string, object>
+		{
+			[TodoDetailViewModel.IdParameter] = item.Id
+		});
 	}
 
 	[RelayCommand]

@@ -25,12 +25,17 @@ public static class MauiProgram
 			options.UseSqlite($"Data Source={dbPath}"));
 
 		builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
+		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
+		builder.Services.AddSingleton<IDialogService, ShellDialogService>();
 
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<HomePage>();
 
 		builder.Services.AddSingleton<TodoListViewModel>();
 		builder.Services.AddSingleton<TodoListPage>();
+
+		builder.Services.AddTransient<TodoDetailViewModel>();
+		builder.Services.AddTransient<TodoDetailPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();
