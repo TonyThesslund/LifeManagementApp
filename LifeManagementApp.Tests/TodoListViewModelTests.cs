@@ -115,15 +115,14 @@ public class TodoListViewModelTests
 	}
 
 	[Fact]
-	public async Task Load_Twice_LoadsCategoriesOnce()
+	public async Task Load_Twice_DoesNotDuplicateCategories()
 	{
 		var viewModel = CreateViewModel();
 
 		await viewModel.LoadTodosCommand.ExecuteAsync(null);
 		await viewModel.LoadTodosCommand.ExecuteAsync(null);
 
-		Assert.Equal(1, _repository.CategoriesCallCount);
-		Assert.Equal(4, viewModel.Filters.Count);
+		Assert.Equal(["All categories", "Personal", "Work", "Shopping"], viewModel.Filters.Select(c => c.Name));
 	}
 
 	[Fact]
@@ -278,5 +277,125 @@ public class TodoListViewModelTests
 
 		Assert.Equal(1, _repository.GetAllCallCount);
 		Assert.False(viewModel.IsBusy);
+	}
+
+	[Fact]
+	public async Task CategoryAddedElsewhere_AppearsInFilter_OnNextLoad()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		// Same order as the real repository: sorted by name
+		_repository.Categories.Insert(0, new Category { Id = 4, Name = "Hobbies" });
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(["All categories", "Hobbies", "Personal", "Work", "Shopping"], viewModel.Filters.Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task CategoryDeletedElsewhere_DisappearsFromFilter_OnNextLoad()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		_repository.Categories.RemoveAll(c => c.Name == "Work");
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal(["All categories", "Personal", "Shopping"], viewModel.Filters.Select(c => c.Name));
+	}
+
+	[Fact]
+	public async Task Reload_KeepsSameCategoryObjects_SoPickerKeepsSelection()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		var work = viewModel.Filters.Single(c => c.Name == "Work");
+		viewModel.SelectedFilter = work;
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Same(work, viewModel.SelectedFilter);
+		Assert.Same(work, viewModel.Filters.Single(c => c.Name == "Work"));
+		Assert.Equal(2, _repository.LastCategoryId);
+	}
+
+	[Fact]
+	public async Task ChosenCategoryDeletedElsewhere_FilterResetsToAll()
+	{
+		_repository.Seed(new TodoItem { Title = "Finish report", CategoryId = 2 });
+		_repository.Seed(new TodoItem { Title = "Call mum", CategoryId = 1 });
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Work");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+
+		await _repository.DeleteCategoryAsync(2);
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Same(TodoListViewModel.AllCategories, viewModel.SelectedFilter);
+		Assert.Null(_repository.LastCategoryId);
+		Assert.Equal(2, viewModel.Todos.Count);
+		Assert.Equal("No to-dos yet.", viewModel.EmptyMessage);
+	}
+
+	[Fact]
+	public async Task PickerReportingNoSelection_FallsBackToAllCategories()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		viewModel.SelectedFilter = null!;
+
+		Assert.Same(TodoListViewModel.AllCategories, viewModel.SelectedFilter);
+	}
+
+	// Acts like the MAUI Picker: when the list changes, it keeps the selected position, not the item,
+	// and sets the item now at that position back into the ViewModel.
+	private static void ShiftSelectionLikePicker(TodoListViewModel viewModel)
+	{
+		var index = viewModel.Filters.IndexOf(viewModel.SelectedFilter);
+		viewModel.Filters.CollectionChanged += (_, _) =>
+		{
+			var shifted = viewModel.Filters[Math.Min(index, viewModel.Filters.Count - 1)];
+			if (shifted != viewModel.SelectedFilter)
+			{
+				viewModel.SelectedFilter = shifted;
+			}
+		};
+	}
+
+	[Fact]
+	public async Task CategoryAddedBeforeChosenFilter_KeepsChosenFilter()
+	{
+		_repository.Seed(new TodoItem { Title = "Call mum", CategoryId = 1 });
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Personal");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+		ShiftSelectionLikePicker(viewModel);
+
+		_repository.Categories.Insert(0, new Category { Id = 4, Name = "Hobbies" });
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal("Personal", viewModel.SelectedFilter.Name);
+		Assert.Equal(1, _repository.LastCategoryId);
+		Assert.Equal(["Call mum"], viewModel.Todos.Select(t => t.Title));
+	}
+
+	[Fact]
+	public async Task CategoryDeletedBeforeChosenFilter_KeepsChosenFilter()
+	{
+		var viewModel = CreateViewModel();
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+		viewModel.SelectedFilter = viewModel.Filters.Single(c => c.Name == "Shopping");
+		await viewModel.LoadTodosCommand.ExecutionTask!;
+		ShiftSelectionLikePicker(viewModel);
+
+		_repository.Categories.RemoveAll(c => c.Name == "Personal");
+		await viewModel.LoadTodosCommand.ExecuteAsync(null);
+
+		Assert.Equal("Shopping", viewModel.SelectedFilter.Name);
+		Assert.Equal(3, _repository.LastCategoryId);
 	}
 }
