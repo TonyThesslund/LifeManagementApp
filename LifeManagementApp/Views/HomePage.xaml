@@ -11,6 +11,46 @@
         <VerticalStackLayout Padding="16"
                              Spacing="12">
 
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 8"
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding LocationName, StringFormat='Weather in {0}'}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="Refresh"
+                                Command="{Binding LoadWeatherCommand}" />
+                    </Grid>
+
+                    <ActivityIndicator IsRunning="{Binding IsLoadingWeather}"
+                                       IsVisible="{Binding IsLoadingWeather}"
+                                       HorizontalOptions="Start" />
+
+                    <Grid ColumnDefinitions="*,*"
+                          IsVisible="{Binding HasWeather}">
+                        <VerticalStackLayout>
+                            <Label Text="Temperature"
+                                   TextColor="{StaticResource Gray500}" />
+                            <Label Text="{Binding Weather.Temperature, StringFormat='{0:0.0} °C'}"
+                                   FontSize="28" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Wind"
+                                   TextColor="{StaticResource Gray500}" />
+                            <Label Text="{Binding Weather.WindSpeed, StringFormat='{0:0.0} m/s'}"
+                                   FontSize="28" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Label Text="{Binding WeatherError}"
+                           IsVisible="{Binding HasWeatherError}"
+                           TextColor="Red" />
+                </VerticalStackLayout>
+            </Border>
+
             <Label Text="Top to-dos"
                    FontSize="20"
                    FontAttributes="Bold" />

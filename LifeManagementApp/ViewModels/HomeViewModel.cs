@@ -13,14 +13,45 @@ public partial class HomeViewModel : ObservableObject
 
 	private readonly ITodoRepository _repository;
 	private readonly INavigationService _navigation;
+	private readonly IWeatherService _weatherService;
 
-	public HomeViewModel(ITodoRepository repository, INavigationService navigation)
+	public HomeViewModel(ITodoRepository repository, INavigationService navigation, IWeatherService weatherService)
 	{
 		_repository = repository;
 		_navigation = navigation;
+		_weatherService = weatherService;
 	}
 
 	public ObservableCollection<TodoItem> TopTodos { get; } = [];
+
+	[ObservableProperty]
+	public partial string LocationName { get; set; } = WeatherLocation.Vaasa.Name;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasWeather))]
+	public partial WeatherInfo? Weather { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsLoadingWeather { get; set; }
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasWeatherError))]
+	public partial string? WeatherError { get; set; }
+
+	public bool HasWeather => Weather is not null;
+
+	public bool HasWeatherError => WeatherError is not null;
+
+	/// <summary>
+	/// Called when the page appears. To-dos are always reloaded; the weather only if it hasn't been loaded yet.
+	/// Both run at the same time, so a slow weather call doesn't hold up the to-do list.
+	/// </summary>
+	public Task LoadAsync()
+	{
+		var todos = LoadTodosCommand.ExecuteAsync(null);
+		var weather = HasWeather ? Task.CompletedTask : LoadWeatherCommand.ExecuteAsync(null);
+		return Task.WhenAll(todos, weather);
+	}
 
 	[RelayCommand]
 	private async Task LoadTodosAsync()
@@ -31,6 +62,33 @@ public partial class HomeViewModel : ObservableObject
 		foreach (var item in items)
 		{
 			TopTodos.Add(item);
+		}
+	}
+
+	[RelayCommand]
+	private async Task LoadWeatherAsync()
+	{
+		if (IsLoadingWeather)
+		{
+			return;
+		}
+
+		IsLoadingWeather = true;
+		WeatherError = null;
+		try
+		{
+			var location = WeatherLocation.Vaasa;
+			Weather = await _weatherService.GetCurrentWeatherAsync(location.Latitude, location.Longitude);
+			LocationName = location.Name;
+		}
+		catch (WeatherUnavailableException ex)
+		{
+			Weather = null;
+			WeatherError = ex.Message;
+		}
+		finally
+		{
+			IsLoadingWeather = false;
 		}
 	}
 
