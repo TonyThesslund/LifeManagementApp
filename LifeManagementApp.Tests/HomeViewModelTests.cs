@@ -329,4 +329,26 @@ public class HomeViewModelTests
 
 		Assert.Equal($"Wind {9.0:0.0} m/s is above your 7 m/s limit", viewModel.KitesurfReason);
 	}
+
+	[Fact]
+	public async Task WeatherTime_ShowsMeasurementTime_WithColon()
+	{
+		_weather.Result = new WeatherInfo { Time = new DateTime(2026, 11, 20, 13, 45, 0) };
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.Equal("13:45", viewModel.WeatherTime);
+	}
+
+	[Fact]
+	public async Task WeatherTime_IsEmpty_WhenWeatherFails()
+	{
+		_weather.Error = new WeatherUnavailableException(WeatherUnavailableException.UnreachableMessage);
+		var viewModel = CreateViewModel();
+
+		await viewModel.LoadWeatherCommand.ExecuteAsync(null);
+
+		Assert.Null(viewModel.WeatherTime);
+	}
 }

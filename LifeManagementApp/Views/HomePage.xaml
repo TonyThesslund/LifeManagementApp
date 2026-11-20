@@ -62,6 +62,10 @@
                         </VerticalStackLayout>
                     </Grid>
 
+                    <Label Text="{Binding WeatherTime, StringFormat='Measured at {0} local time'}"
+                           IsVisible="{Binding HasWeather}"
+                           TextColor="{StaticResource Gray500}" />
+
                     <Label Text="{Binding WeatherError}"
                            IsVisible="{Binding HasWeatherError}"
                            TextColor="Red" />

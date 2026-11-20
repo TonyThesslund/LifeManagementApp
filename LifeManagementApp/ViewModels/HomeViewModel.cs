@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LifeManagementApp.Models;
@@ -42,7 +43,14 @@ public partial class HomeViewModel : ObservableObject
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(HasWeather))]
+	[NotifyPropertyChangedFor(nameof(WeatherTime))]
 	public partial WeatherInfo? Weather { get; set; }
+
+	/// <summary>
+	/// When the shown weather was measured, in the location's own time zone, e.g. "13:45".
+	/// Invariant culture so it's "13:45" and not "13.45" on a Finnish system.
+	/// </summary>
+	public string? WeatherTime => Weather?.Time.ToString("HH:mm", CultureInfo.InvariantCulture);
 
 	[ObservableProperty]
 	public partial bool IsKitesurfWeather { get; set; }
