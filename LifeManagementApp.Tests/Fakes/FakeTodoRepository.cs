@@ -28,8 +28,11 @@ public class FakeTodoRepository : ITodoRepository
 		return Task.FromResult(Items.Select(Copy).ToList());
 	}
 
+	public int? LastTopCount { get; private set; }
+
 	public Task<List<TodoItem>> GetTopAsync(int count)
 	{
+		LastTopCount = count;
 		return Task.FromResult(Items.Take(count).Select(Copy).ToList());
 	}
 
