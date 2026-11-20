@@ -69,7 +69,7 @@ The Windows app can only be built on Windows and the Mac app only on a Mac. The 
 
 ### Mac
 
-1. Install **Xcode** from the App Store, open it once to accept the license and install its components, then run:
+1. Install **Xcode 26.5**, the version the .NET MAUI 9 Mac tools require. The App Store has a newer one, so download it from https://developer.apple.com/download/all (free Apple ID). Unzip it into Applications, open it once to accept the license and install its components, then run:
    ```
    sudo xcode-select -s /Applications/Xcode.app
    ```
@@ -83,7 +83,7 @@ The Windows app can only be built on Windows and the Mac app only on a Mac. The 
    dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-maccatalyst
    ```
 
-If the build says the Xcode version doesn't match, install the version it names (older versions are at https://developer.apple.com/download/all).
+If the build says the Xcode version doesn't match, install the version it names from the same page.
 
 ### Tests
 
