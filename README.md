@@ -24,33 +24,211 @@ View (XAML)  →  ViewModel  →  Service (interface)  →  SQLite (EF Core) / O
 - **ViewModels** use `[ObservableProperty]` and `[RelayCommand]` and never reference UI controls.
 - **Services** hold all data access and business rules behind interfaces, and are injected via DI in `MauiProgram`.
 
-## Planned structure
+### Dependency injection lifetimes
+
+| Registration | Lifetime | Why |
+|--------------|----------|-----|
+| `TodoRepository` | Singleton | Creates a new short-lived `AppDbContext` for each call through `IDbContextFactory`, so one shared repository is safe |
+| `AppDbContext` | Factory | A `DbContext` isn't thread-safe and shouldn't live long, so the factory gives a new one per operation |
+| `OpenMeteoWeatherService`, `OpenMeteoGeocodingService` | Typed `HttpClient` (transient) | `AddHttpClient` reuses connections through `IHttpClientFactory` and avoids running out of sockets |
+| Settings, theme, kitesurf advisor, navigation, dialogs | Singleton | They hold no per-page state, or wrap something the whole app shares (`Preferences`, `Shell`) |
+| `HomePage`, `TodoListPage`, `SettingsPage` + ViewModels | Singleton | Tab pages exist for as long as the app runs, so they keep their state when switching tabs |
+| `TodoDetailPage` + `TodoDetailViewModel` | Transient | Each add or edit gets a fresh empty form, so values from an earlier to-do never carry over |
+
+## Class diagram
+
+### Data model
+
+`TodoItem` and `Category` are stored in SQLite with EF Core. Deleting a category keeps its to-dos and leaves them without a category.
+
+```mermaid
+classDiagram
+    class TodoItem {
+        +int Id
+        +string Title
+        +string? Notes
+        +int Priority
+        +DateTime DueDate
+        +bool IsDone
+        +int? CategoryId
+        +Category? Category
+    }
+    class Category {
+        +int Id
+        +string Name
+        +List~TodoItem~ Todos
+    }
+    class AppDbContext {
+        +DbSet~TodoItem~ Todos
+        +DbSet~Category~ Categories
+    }
+    class WeatherInfo {
+        +double Temperature
+        +double WindSpeed
+        +DateTime Time
+    }
+    class WeatherLocation {
+        <<record>>
+        +string Name
+        +double Latitude
+        +double Longitude
+        +string? Details
+    }
+    class TodoSortOrder {
+        <<enum>>
+        Priority
+        DueDate
+    }
+    class ThemeSetting {
+        <<enum>>
+        System
+        Light
+        Dark
+    }
+    Category "0..1" --> "*" TodoItem : Todos
+    AppDbContext --> TodoItem
+    AppDbContext --> Category
+```
+
+### ViewModels and services
+
+Each page has one ViewModel. ViewModels only know the service interfaces, and `MauiProgram` decides which class is behind each one.
+
+```mermaid
+classDiagram
+    class HomeViewModel {
+        +ObservableCollection~TodoItem~ TopTodos
+        +WeatherInfo? Weather
+        +bool IsKitesurfWeather
+        +bool IsLoadingWeather
+        +string? WeatherError
+        +LoadTodosCommand
+        +LoadWeatherCommand
+        +OpenTodoCommand
+    }
+    class TodoListViewModel {
+        +ObservableCollection~TodoItem~ OpenTodos
+        +ObservableCollection~TodoItem~ DoneTodos
+        +TodoSortOrder SortOrder
+        +Category SelectedFilter
+        +AddTodoCommand
+        +EditTodoCommand
+        +ToggleDoneCommand
+        +DeleteTodoCommand
+    }
+    class TodoDetailViewModel {
+        +string Title
+        +string? Notes
+        +int Priority
+        +DateTime DueDate
+        +Category SelectedCategory
+        +SaveCommand
+        +CancelCommand
+        +ApplyQueryAttributes(query)
+    }
+    class SettingsViewModel {
+        +WeatherLocation CurrentLocation
+        +string WindLimitText
+        +ThemeSetting SelectedTheme
+        +ObservableCollection~Category~ Categories
+        +SearchCommand
+        +AddCategoryCommand
+        +DeleteCategoryCommand
+    }
+
+    class ITodoRepository {
+        <<interface>>
+        +GetAllAsync(sortOrder, categoryId)
+        +GetTopAsync(count)
+        +GetByIdAsync(id)
+        +AddAsync(item)
+        +UpdateAsync(item)
+        +DeleteAsync(id)
+        +GetCategoriesAsync()
+        +AddCategoryAsync(name)
+        +DeleteCategoryAsync(id)
+    }
+    class IWeatherService {
+        <<interface>>
+        +GetCurrentWeatherAsync(latitude, longitude)
+    }
+    class IGeocodingService {
+        <<interface>>
+        +SearchAsync(name)
+    }
+    class IKitesurfAdvisor {
+        <<interface>>
+        +double WindLimit
+        +IsKitesurfWeather(weather)
+    }
+    class ISettingsService {
+        <<interface>>
+        +WeatherLocation Location
+        +double WindLimit
+        +ThemeSetting Theme
+    }
+    class IThemeService {
+        <<interface>>
+        +Apply(theme)
+    }
+    class INavigationService {
+        <<interface>>
+        +GoToAsync(route, parameters)
+        +GoBackAsync()
+    }
+    class IDialogService {
+        <<interface>>
+        +ShowAlertAsync(title, message)
+        +ConfirmAsync(title, message, accept, cancel)
+    }
+
+    HomeViewModel --> ITodoRepository
+    HomeViewModel --> IWeatherService
+    HomeViewModel --> IKitesurfAdvisor
+    HomeViewModel --> ISettingsService
+    HomeViewModel --> INavigationService
+    TodoListViewModel --> ITodoRepository
+    TodoListViewModel --> INavigationService
+    TodoListViewModel --> IDialogService
+    TodoDetailViewModel --> ITodoRepository
+    TodoDetailViewModel --> INavigationService
+    TodoDetailViewModel --> IDialogService
+    SettingsViewModel --> ISettingsService
+    SettingsViewModel --> IGeocodingService
+    SettingsViewModel --> IThemeService
+    SettingsViewModel --> ITodoRepository
+    SettingsViewModel --> IDialogService
+
+    ITodoRepository <|.. TodoRepository
+    IWeatherService <|.. OpenMeteoWeatherService
+    IGeocodingService <|.. OpenMeteoGeocodingService
+    IKitesurfAdvisor <|.. KitesurfAdvisor
+    ISettingsService <|.. PreferencesSettingsService
+    IThemeService <|.. ThemeService
+    INavigationService <|.. ShellNavigationService
+    IDialogService <|.. ShellDialogService
+    TodoRepository --> AppDbContext
+    KitesurfAdvisor --> ISettingsService
+```
+
+## Project structure
 
 ```text
 LifeManagementApp/
-├── Models/
-│   ├── TodoItem.cs
-│   ├── Category.cs
-│   └── WeatherInfo.cs
-├── Data/
-│   └── AppDbContext.cs
-├── Services/
-│   ├── ITodoRepository.cs
-│   ├── TodoRepository.cs
-│   ├── IWeatherService.cs
-│   └── OpenMeteoWeatherService.cs
-├── ViewModels/
-│   ├── HomeViewModel.cs
-│   ├── TodoListViewModel.cs
-│   └── TodoDetailViewModel.cs
-├── Views/
-│   ├── HomePage.xaml
-│   ├── TodoListPage.xaml
-│   └── TodoDetailPage.xaml
-├── Converters/
-├── AppShell.xaml
-├── MauiProgram.cs
-└── README.md
+├── LifeManagementApp/              The app
+│   ├── Models/                     TodoItem, Category, WeatherInfo, WeatherLocation, enums and Open-Meteo JSON classes
+│   ├── Data/
+│   │   └── AppDbContext.cs         EF Core database (SQLite)
+│   ├── Services/                   Interfaces and their classes: repository, weather, geocoding, settings, theme, navigation, dialogs
+│   ├── ViewModels/                 HomeViewModel, TodoListViewModel, TodoDetailViewModel, SettingsViewModel
+│   ├── Views/                      HomePage, TodoListPage, TodoDetailPage, SettingsPage
+│   ├── Converters/                 Priority color, due date text, sort order text, strikethrough for done to-dos
+│   ├── Resources/Styles/           Colors.xaml (color theme) and Styles.xaml (shared styles)
+│   ├── AppShell.xaml               Tabs and routes
+│   └── MauiProgram.cs              Dependency injection setup
+├── LifeManagementApp.Tests/        xUnit tests, with fake services in Fakes/
+├── .github/workflows/build.yml     Windows and Mac builds and tests on GitHub Actions
+└── global.json                     Pins the .NET 10 SDK
 ```
 
 ## Running the app
@@ -94,6 +272,21 @@ If the build says the Xcode version doesn't match, install the version it names 
 dotnet test LifeManagementApp.Tests
 ```
 
+## AI use
+
+I used **Claude Code** by Anthropic (with the Claude Opus model) as an AI assistant during the project, in four areas:
+
+- **General coding assistance**: help with setting up the project, suggesting how to structure classes and finding the cause of build errors and bugs
+- **Test cases**: help with writing xUnit tests for the repository, ViewModels, converters and weather service and with finding cases the tests didn't cover yet, such as empty titles, network errors and the wind limit
+- **UI refinement**: help with the color theme, shared styles, page layouts, light and dark mode, and making the app look right on both Windows and Mac
+- **Documentation**: writing this README, including the class diagrams, the project structure, the DI lifetime table and the setup steps, as well as the GitHub issue descriptions
+
+How I checked the AI's work:
+
+- Read through every suggested change before keeping it, and asked for an explanation of anything I didn't understand
+- Built and ran the app on Windows and Mac to see that changes worked
+- Ran the unit tests after each change, and GitHub Actions built and tested every pull request
+
 ## Work order
 
 Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>-short-name`) and merged to `main` with a pull request that closes the issues. From step 7 on, each step also adds xUnit tests for the logic it introduces.
@@ -122,24 +315,24 @@ Each step is a GitHub issue with sub-issues, done in a feature branch (`<issue#>
 ## Requirements checklist
 
 **Core**
-- [ ] Home: top 3 unfinished to-dos (priority desc, due date asc)
-- [ ] Home: temperature + wind speed (m/s)
-- [ ] Home: kitesurf notice when wind > 5 m/s
-- [ ] To-do list in `CollectionView`
-- [ ] Sort by priority / due date
-- [ ] Add new to-do, empty title rejected
-- [ ] Fields: Id, Title, Priority 1–5, DueDate, IsDone
+- [x] Home: top 3 unfinished to-dos (priority desc, due date asc)
+- [x] Home: temperature + wind speed (m/s)
+- [x] Home: kitesurf notice when wind > 5 m/s
+- [x] To-do list in `CollectionView`
+- [x] Sort by priority / due date
+- [x] Add new to-do, empty title rejected
+- [x] Fields: Id, Title, Priority 1–5, DueDate, IsDone
 
 **Top levels**
-- [ ] Shell navigation + parameter to edit page
-- [ ] SQLite + EF Core Code First, Category 1–N TodoItem, async queries
-- [ ] Model/ViewModel/Service, interfaces, no logic in code-behind
-- [ ] `[ObservableProperty]`, `[RelayCommand]`, `ObservableCollection`, `x:DataType`, converter
-- [ ] Interfaces + pages/VMs via DI, lifetimes justified
-- [ ] Async HTTP, JSON → model, no-network message, loading indicator
-- [ ] Regular commits, README per template
+- [x] Shell navigation + parameter to edit page
+- [x] SQLite + EF Core Code First, Category 1–N TodoItem, async queries
+- [x] Model/ViewModel/Service, interfaces, no logic in code-behind
+- [x] `[ObservableProperty]`, `[RelayCommand]`, `ObservableCollection`, `x:DataType`, converter
+- [x] Interfaces + pages/VMs via DI, lifetimes justified
+- [x] Async HTTP, JSON → model, no-network message, loading indicator
+- [x] Regular commits, README per template
 
 **Bonus**
-- [ ] Issues + feature branches + PRs
-- [ ] Two extra features
-- [ ] xUnit tests
+- [x] Issues + feature branches + PRs
+- [x] Two extra features
+- [x] xUnit tests
